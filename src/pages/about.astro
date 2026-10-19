@@ -1,63 +1,250 @@
 ---
-import AboutHeroImage from '../assets/blog-placeholder-about.jpg';
-import Layout from '../layouts/BlogPost.astro';
+// Astro Frontmatter 使用 --- 包围；本页没有服务端数据，因此目前为空。
 ---
+<!DOCTYPE html>
+<!-- 关于页是独立页面，拥有自己的文档结构、交互脚本和全局样式。 -->
+<html lang="zh-CN">
+  <!-- 页面标题、编码、视口和字体声明位于 head 中。 -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/jadestream.png" />
+    <title>关于我 - 筠溪</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  </head>
+  <!-- 页面内容放在 body 中；画布提供背景，主容器放置导航和介绍卡片。 -->
+  <body>
+    <canvas id="particle-canvas"></canvas>
+    <main class="container">
+      <a href="/" class="back-btn">← 返回首页</a>
+      <header class="profile">
+        <h1>关于我</h1>
+      </header>
+      <div class="card">
+        <p>你好，我是筠溪。这里是我的个人博客😆。</p>
+        <p>在这里我们一起学习共同成长🎉🎉🎉</p>
+      </div>
+    </main>
 
-<Layout
-	title="About Me"
-	description="Lorem ipsum dolor sit amet"
-	pubDate={new Date('August 08 2021')}
-	heroImage={AboutHeroImage}
->
-	<p>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-		labore et dolore magna aliqua. Vitae ultricies leo integer malesuada nunc vel risus commodo
-		viverra. Adipiscing enim eu turpis egestas pretium. Euismod elementum nisi quis eleifend quam
-		adipiscing. In hac habitasse platea dictumst vestibulum. Sagittis purus sit amet volutpat. Netus
-		et malesuada fames ac turpis egestas. Eget magna fermentum iaculis eu non diam phasellus
-		vestibulum lorem. Varius sit amet mattis vulputate enim. Habitasse platea dictumst quisque
-		sagittis. Integer quis auctor elit sed vulputate mi. Dictumst quisque sagittis purus sit amet.
-	</p>
+    <!-- 同样的粒子特效 JS -->
+    <!-- 浏览器端脚本负责画布尺寸、鼠标互动和粒子动画。 -->
+    <script>
+      // 粒子逻辑使用 Canvas 2D API，在浏览器中更新和绘制页面背景。
+      // 找到页面中的背景画布，并建立 Canvas 2D 绘图上下文。
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      // 画布的像素尺寸跟随视口；宽高也用于粒子边界判断。
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+      // 鼠标初始放在屏幕外；radius 定义鼠标影响粒子的范围。
+      let mouse = {
+        x: -1000, y: -1000, radius: 120
+      };
+      // 事件监听器同步鼠标位置；窗口变化时重设画布并重新生成粒子。
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.x;
+        mouse.y = e.y;
+      });
+      window.addEventListener('mouseout', () => {
+        mouse.x = -1000;
+        mouse.y = -1000;
+      });
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initParticles();
+      });
+      let particles = [];
+      // 小屏幕减少粒子数量，降低动画需要处理的对象数。
+      const particleCount = window.innerWidth < 768 ? 40 : 65;
+      // 粒子类保存绘制所需状态，并实现移动、鼠标排斥和绘制方法。
+      class Particle {
+        // 构造函数为粒子随机设置起点、移动速度和基础半径。
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * 1;
+          this.vy = (Math.random() - 0.5) * 1;
+          this.baseRadius = Math.random() * 1.5 + 1;
+          this.radius = this.baseRadius;
+        }
+        // 每帧先处理边界和移动，再根据鼠标距离计算排斥力。
+        update() {
+          if (this.x < 0 || this.x > width) this.vx = -this.vx;
+          if (this.y < 0 || this.y > height) this.vy = -this.vy;
+          this.x += this.vx;
+          this.y += this.vy;
+          let dx = mouse.x - this.x;
+          let dy = mouse.y - this.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < mouse.radius && distance > 0) {
+            const forceDirectionX = dx / distance;
+            const forceDirectionY = dy / distance;
+            const force = (mouse.radius - distance) / mouse.radius;
+            this.x -= forceDirectionX * force * 5;
+            this.y -= forceDirectionY * force * 5;
+            this.radius = this.baseRadius + force * 2;
+          } else {
+            this.radius = this.baseRadius;
+          }
+        }
+        // 按系统深浅色主题选取粒子颜色，再在当前位置画圆。
+        draw() {
+          const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.4)';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      // 先创建当前视口需要的粒子，再逐帧更新和绘制背景。
+      function initParticles() {
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+          particles.push(new Particle());
+        }
+      }
+      // 动画每帧清空旧画面，更新并绘制粒子，再连接彼此靠近的点。
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update();
+          particles[i].draw();
+          for (let j = i + 1; j < particles.length; j++) {
+            let dx = particles[i].x - particles[j].x;
+            let dy = particles[i].y - particles[j].y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            // 两点距离小于阈值时才画连线，避免给过远的粒子连线。
+            if (distance < 100) {
+              const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+              ctx.strokeStyle = isDark ? `rgba(255,255,255,${0.15 - distance/800})` : `rgba(0,0,0,${0.1 - distance/1000})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+      initParticles();
+      animate();
+    </script>
 
-	<p>
-		Morbi tristique senectus et netus. Id semper risus in hendrerit gravida rutrum quisque non
-		tellus. Habitasse platea dictumst quisque sagittis purus sit amet. Tellus molestie nunc non
-		blandit massa. Cursus vitae congue mauris rhoncus. Accumsan tortor posuere ac ut. Fringilla urna
-		porttitor rhoncus dolor. Elit ullamcorper dignissim cras tincidunt lobortis. In cursus turpis
-		massa tincidunt dui ut ornare lectus. Integer feugiat scelerisque varius morbi enim nunc.
-		Bibendum neque egestas congue quisque egestas diam. Cras ornare arcu dui vivamus arcu felis
-		bibendum. Dignissim suspendisse in est ante in nibh mauris. Sed tempus urna et pharetra pharetra
-		massa massa ultricies mi.
-	</p>
-
-	<p>
-		Mollis nunc sed id semper risus in. Convallis a cras semper auctor neque. Diam sit amet nisl
-		suscipit. Lacus viverra vitae congue eu consequat ac felis donec. Egestas integer eget aliquet
-		nibh praesent tristique magna sit amet. Eget magna fermentum iaculis eu non diam. In vitae
-		turpis massa sed elementum. Tristique et egestas quis ipsum suspendisse ultrices. Eget lorem
-		dolor sed viverra ipsum. Vel turpis nunc eget lorem dolor sed viverra. Posuere ac ut consequat
-		semper viverra nam. Laoreet suspendisse interdum consectetur libero id faucibus. Diam phasellus
-		vestibulum lorem sed risus ultricies tristique. Rhoncus dolor purus non enim praesent elementum
-		facilisis. Ultrices tincidunt arcu non sodales neque. Tempus egestas sed sed risus pretium quam
-		vulputate. Viverra suspendisse potenti nullam ac tortor vitae purus faucibus ornare. Fringilla
-		urna porttitor rhoncus dolor purus non. Amet dictum sit amet justo donec enim.
-	</p>
-
-	<p>
-		Mattis ullamcorper velit sed ullamcorper morbi tincidunt. Tortor posuere ac ut consequat semper
-		viverra. Tellus mauris a diam maecenas sed enim ut sem viverra. Venenatis urna cursus eget nunc
-		scelerisque viverra mauris in. Arcu ac tortor dignissim convallis aenean et tortor at. Curabitur
-		gravida arcu ac tortor dignissim convallis aenean et tortor. Egestas tellus rutrum tellus
-		pellentesque eu. Fusce ut placerat orci nulla pellentesque dignissim enim sit amet. Ut enim
-		blandit volutpat maecenas volutpat blandit aliquam etiam. Id donec ultrices tincidunt arcu. Id
-		cursus metus aliquam eleifend mi.
-	</p>
-
-	<p>
-		Tempus quam pellentesque nec nam aliquam sem. Risus at ultrices mi tempus imperdiet. Id porta
-		nibh venenatis cras sed felis eget velit. Ipsum a arcu cursus vitae. Facilisis magna etiam
-		tempor orci eu lobortis elementum. Tincidunt dui ut ornare lectus sit. Quisque non tellus orci
-		ac. Blandit libero volutpat sed cras. Nec tincidunt praesent semper feugiat nibh sed pulvinar
-		proin gravida. Egestas integer eget aliquet nibh praesent tristique magna.
-	</p>
-</Layout>
+    <!-- 通用样式（包含首页的底层设置） -->
+    <!-- Astro 的 is:global 让本页样式规则应用到全局 HTML 元素。 -->
+    <style is:global>
+      /* 主题变量集中保存背景、文字和卡片颜色，暗色模式会替换它们。 */
+      :root {
+        --bg-color: #f9f9f9;
+        --text-color: #333;
+        --card-bg: rgba(255, 255, 255, 0.7);
+        --card-border: #ebebeb;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-color: #121212;
+          --text-color: #e0e0e0;
+          --card-bg: rgba(30, 30, 30, 0.7);
+          --card-border: #333;
+        }
+      }
+      /* 固定画布放在页面内容后方，不拦截点击操作。 */
+      #particle-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
+        pointer-events: none;
+      }
+      /* body 规则设置页面主题、字体和内容居中布局。 */
+      body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        transition: background-color 0.3s, color 0.3s;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+      }
+      /* 容器限制内容最大宽度，并提供两侧留白。 */
+      .container {
+        width: 100%;
+        max-width: 680px;
+        padding: 2rem 1.5rem;
+        z-index: 10;
+      }
+      .profile {
+        text-align: center;
+        margin-bottom: 2rem;
+        animation: fadeInDown 0.8s ease;
+      }
+      .profile h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+      }
+      /* 自我介绍卡片通过半透明底色和 backdrop-filter 呈现毛玻璃效果。 */
+      .card {
+        display: flex;
+        flex-direction: column;
+        padding: 2rem;
+        background-color: var(--card-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        animation: fadeInUp 0.8s ease;
+      }
+      .card p {
+        color: #777;
+        font-size: 1.05rem;
+        line-height: 1.8;
+        margin-bottom: 1rem;
+      }
+      @media (prefers-color-scheme: dark) {
+        .card p {
+          color: #aaa;
+        }
+      }
+      /* 返回链接提供回到首页的导航。 */
+      .back-btn {
+        display: inline-block;
+        margin-bottom: 2rem;
+        color: #888;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: color 0.2s;
+      }
+      .back-btn:hover {
+        color: var(--text-color);
+      }
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </body>
+</html>

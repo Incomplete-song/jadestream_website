@@ -1,59 +1,358 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+// Astro 文件开头的 Frontmatter 由这对 --- 标记；其中代码在服务端构建页面时运行。
+// 本页没有需要预先读取的数据，所以 Frontmatter 只作说明；浏览器交互放在下方 script 中。
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
-				template serves as a lightweight, minimally-styled starting point for anyone looking to
-				build a personal website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your{' '}
-				<code>astro.config.mjs</code> file. You can customize your setup with{' '}
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like
-				Tailwind, React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>
-					Edit this page in <code>src/pages/index.astro</code>
-				</li>
-				<li>
-					Edit the site header items in <code>src/components/Header.astro</code>
-				</li>
-				<li>
-					Add your name to the footer in <code>src/components/Footer.astro</code>
-				</li>
-				<li>
-					Check out the included blog posts in <code>src/content/blog/</code>
-				</li>
-				<li>
-					Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code>
-				</li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to{' '}
-				<a href="https://docs.astro.build/">read the docs</a> or{' '}
-				<a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out{' '}
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a> by{' '}
-				<a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
-		</main>
-		<Footer />
-	</body>
+<!DOCTYPE html>
+<!-- 页面主体是标准 HTML 文档；Astro 会把模板内容渲染后交给浏览器。 -->
+<html lang="zh-CN">
+  <!-- head 保存页面编码、移动端视口、标题、搜索摘要和字体资源。 -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/jadestream.png" />
+    <title>筠溪的主页</title>
+    <meta name="description" content="筠溪的个人自留地 - 无限进步" />
+    <!-- 引入 Inter 字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  </head>
+
+  <!-- body 是用户可见页面内容与前端交互的容器。 -->
+  <body>
+    <!-- 背景粒子画布 -->
+    <canvas id="particle-canvas"></canvas>
+
+    <main class="container">
+      <!-- 头部区域 -->
+      <header class="profile">
+        <h1>Hi, I'm jadestream</h1>
+        <p class="quote">“ 梦想是成为全栈开发者！！！🤩 ”</p>
+        <div class="clock" id="clock">00 : 00 : 00</div>
+      </header>
+
+      <!-- 卡片网格区域 -->
+      <section class="links">
+        <!-- 卡片 1 -->
+        <a href="/blog" class="card">
+          <h2>博客文章</h2>
+          <p>个人各种学习经验</p>
+        </a>
+
+        <!-- 卡片 2 -->
+        <a href="/about" class="card">
+          <h2>关于我</h2>
+          <p>“无限进步”</p>
+        </a>
+
+        <!-- 卡片 3 -->
+        <a href="https://github.com/Incomplete-song?tab=repositories" target="_blank" class="card">
+          <h2>GitHub</h2>
+          <p>github主页，开源代码都在这</p>
+        </a>
+
+        <!-- 卡片 4 -->
+        <a href="#" class="card">
+          <h2>施工中... </h2>
+          <p>别点了，再点你也打不开💤</p>
+        </a>
+      </section>
+    </main>
+
+    <!-- 页面所有的 JavaScript 逻辑 -->
+    <script>
+      // --- 1. 动态时钟 ---
+      // 读取当前本地时间、补齐两位数字，并写入页面时钟。
+      function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const clockElement = document.getElementById('clock');
+        if (clockElement) {
+          clockElement.textContent = `${hours} : ${minutes} : ${seconds}`;
+        }
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+
+
+      // --- 2. 鼠标互动粒子特效（优化不卡顿版） ---
+      // canvas 是背景绘图画布；2D context 提供绘制粒子和连线的方法。
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+
+      // 鼠标位置，默认在屏幕外
+      let mouse = { x: -1000, y: -1000, radius: 120 };
+
+      // 监听鼠标移动、离开页面和窗口尺寸变化，更新粒子系统所需的状态。
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.x;
+        mouse.y = e.y;
+      });
+      
+      // 鼠标移出窗口时隐藏互动效果
+      window.addEventListener('mouseout', () => {
+        mouse.x = -1000;
+        mouse.y = -1000;
+      });
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initParticles();
+      });
+
+      let particles = [];
+      // 黄金数量，兼顾美观和性能。如果是手机屏幕，自动减少粒子数量
+      const particleCount = window.innerWidth < 768 ? 40 : 65; 
+
+      // 每个 Particle 对象保存一个粒子的位置、速度和绘制半径。
+      class Particle {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * 1;
+          this.vy = (Math.random() - 0.5) * 1;
+          this.baseRadius = Math.random() * 1.5 + 1;
+          this.radius = this.baseRadius;
+        }
+        update() {
+          // 边界反弹
+          if (this.x < 0 || this.x > width) this.vx = -this.vx;
+          if (this.y < 0 || this.y > height) this.vy = -this.vy;
+
+          // 基础移动
+          this.x += this.vx;
+          this.y += this.vy;
+
+          // 鼠标互动逻辑：排斥力（推开粒子，防止聚集卡顿）
+          let dx = mouse.x - this.x;
+          let dy = mouse.y - this.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < mouse.radius && distance > 0) {
+            // 计算推力方向（远离鼠标）
+            const forceDirectionX = dx / distance;
+            const forceDirectionY = dy / distance;
+            // 距离越近，排斥力越大
+            const force = (mouse.radius - distance) / mouse.radius;
+            const directionX = forceDirectionX * force * 5; // 可调力度
+            const directionY = forceDirectionY * force * 5;
+            
+            // 加上推力，导致粒子散开
+            this.x -= directionX;
+            this.y -= directionY;
+            
+            // 视觉反馈：靠近鼠标时稍微变大一点
+            this.radius = this.baseRadius + force * 2;
+          } else {
+            // 恢复原大小
+            this.radius = this.baseRadius;
+          }
+        }
+        draw() {
+          const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.4)';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // 按屏幕尺寸重新创建粒子数组；动画循环每帧更新并绘制它们。
+      function initParticles() {
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+          particles.push(new Particle());
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update();
+          particles[i].draw();
+
+          // 绘制连线（优化：只有距离小于 100 才连线，且 j = i + 1 避免重复计算）
+          for (let j = i + 1; j < particles.length; j++) {
+            let dx = particles[i].x - particles[j].x;
+            let dy = particles[i].y - particles[j].y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 100) {
+              const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+              // 距离越近，线越清晰
+              ctx.strokeStyle = isDark ? `rgba(255,255,255,${0.15 - distance/800})` : `rgba(0,0,0,${0.1 - distance/1000})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+
+      initParticles();
+      animate();
+    </script>
+
+<!-- 页面所有的 CSS 样式 -->
+    <!-- is:global 让这些样式作用于整个页面，而不是被 Astro 限定到组件内。 -->
+    <style is:global>
+      /* 全局基础设置与主题变量 */
+      /* CSS 自定义属性集中保存主题颜色，后续规则通过 var() 读取。 */
+      :root {
+        --bg-color: #f9f9f9;
+        --text-color: #333;
+        /* ★ 核心修改1：透明度大幅降低到 0.15，让它近乎透明 */
+        --card-bg: rgba(255, 255, 255, 0.15); 
+        /* ★ 核心修改2：边框稍微亮一点，模拟玻璃反光边缘 */
+        --card-border: rgba(255, 255, 255, 0.8); 
+      }
+
+      /* 强制深色模式也使用同样的透明玻璃，防止变黑 */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-color: #121212;
+          --text-color: #e0e0e0;
+          --card-bg: rgba(255, 255, 255, 0.15); 
+          --card-border: rgba(255, 255, 255, 0.8);
+        }
+      }
+
+      /* 粒子画布样式 */
+      #particle-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1; 
+        pointer-events: none;
+      }
+
+      /* 页面基础样式 */
+      body {
+        margin: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        /* ★ 核心修改3：换一个色彩饱和度高一点的渐变，这样毛玻璃透出来的颜色才好看 */
+        background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); 
+        color: var(--text-color);
+        transition: background-color 0.3s, color 0.3s;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden; 
+      }
+
+      /* 容器限制最大宽度 */
+      .container {
+        width: 100%;
+        max-width: 680px;
+        padding: 2rem 1.5rem;
+        z-index: 10; 
+      }
+
+      /* 头部样式 */
+      .profile {
+        text-align: center;
+        margin-bottom: 3rem;
+        animation: fadeInDown 0.8s ease;
+      }
+
+      .profile h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: #111; /* 深色字 */
+      }
+
+      .quote {
+        color: #333; 
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+      }
+
+      /* 时钟样式 */
+      .clock {
+        font-size: 1.2rem;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 2px;
+        color: #333; 
+      }
+      @media (prefers-color-scheme: dark) {
+        .clock { color: #333; }
+      }
+
+      /* 卡片网格布局 */
+      .links {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+        animation: fadeInUp 0.8s ease;
+      }
+
+      @media (min-width: 600px) {
+        .links {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      /* ★ 核心修改4：卡片主体 */
+      .card {
+        display: flex;
+        flex-direction: column;
+        padding: 1.5rem;
+        background-color: var(--card-bg); /* 极低透明度的白色 */
+        backdrop-filter: blur(20px);      /* 强力模糊背景 */
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--card-border); /* 亮白色边框 */
+        border-radius: 16px; 
+        text-decoration: none;
+        color: #111; /* 字体深色 */
+        /* ★ 核心修改5：用厚重的阴影强行把它和背景拉开层次 */
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); 
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+      }
+
+      /* 鼠标悬浮效果 */
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25); 
+        background-color: rgba(255, 255, 255, 0.3); /* 悬浮时稍微变白一点点 */
+      }
+
+      .card h2 {
+        font-size: 1.15rem;
+        margin: 0 0 0.5rem 0;
+        font-weight: 600;
+        color: #000;
+      }
+
+      .card p {
+        color: #333;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin: 0;
+      }
+
+      /* 入场动画 */
+      @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+  </body>
 </html>

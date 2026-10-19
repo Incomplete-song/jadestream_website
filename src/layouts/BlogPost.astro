@@ -1,84 +1,362 @@
 ---
-import { Image } from 'astro:assets';
+// type import 只用于 TypeScript 类型检查，构建后的浏览器代码里不会包含它。
 import type { CollectionEntry } from 'astro:content';
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import FormattedDate from '../components/FormattedDate.astro';
-import Header from '../components/Header.astro';
 
+// Props 描述此布局接收的文章元数据类型，便于 Astro 检查传入值。
 type Props = CollectionEntry<'blog'>['data'];
-
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+// Astro.props 是组件收到的属性；解构后可直接使用文章标题、摘要和日期。
+const { title, description, pubDate } = Astro.props;
 ---
 
-<html lang="en">
-	<head>
-		<BaseHead title={title} description={description} />
-		<style>
-			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.hero-image {
-				width: 100%;
-			}
-			.hero-image img {
-				display: block;
-				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
-			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
-			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
-			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
-			}
-			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
-			}
-			.last-updated-on {
-				font-style: italic;
-			}
-		</style>
-	</head>
+<!DOCTYPE html>
+<!-- 该布局提供每篇文章共用的完整 HTML 外壳。 -->
+<html lang="zh-CN">
+  <!-- 浏览器标签、搜索摘要和字体声明由文章元数据填充。 -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} - 筠溪</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/png" href="/jadestream.png" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  </head>
+  <!-- 正文区域包含背景画布、返回链接、文章元信息和 Markdown 插槽。 -->
+  <body>
+    <canvas id="particle-canvas"></canvas>
+    
+    <main class="container">
+      <a href="/blog" class="back-btn">← 返回文章列表</a>
+      
+      <article class="card article-content">
+        <header class="article-header">
+          <h1>{title}</h1>
+          <p class="date">{pubDate.toLocaleDateString('zh-CN')}</p>
+        </header>
+        <!-- slot 是 Astro 插槽：动态文章页会把渲染后的 Markdown 放在这里。 -->
+        <div class="content-body">
+          <slot /> <!-- 这里会插入你的 Markdown 内容 -->
+        </div>
+      </article>
+    </main>
 
-	<body>
-		<Header />
-		<main>
-			<article>
-				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
-				</div>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{updatedDate && (
-								<div class="last-updated-on">
-									Last updated on <FormattedDate date={updatedDate} />
-								</div>
-							)}
-						</div>
-						<h1>{title}</h1>
-						<hr />
-					</div>
-					<slot />
-				</div>
-			</article>
-		</main>
-		<Footer />
-	</body>
+    <!-- 粒子特效 JS -->
+    <!-- 此脚本在浏览器运行，为所有文章页绘制相同的鼠标互动粒子背景。 -->
+    <script>
+      // 取得绘图画布和 2D 上下文，并把画布尺寸同步到浏览器视口。
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      // 画布的像素尺寸跟随视口；宽高也用于粒子边界判断。
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+      // 鼠标初始放在屏幕外；radius 定义鼠标影响粒子的范围。
+      let mouse = {
+        x: -1000, y: -1000, radius: 120
+      };
+      // 鼠标事件更新交互坐标；resize 事件让画布和粒子适配新窗口。
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.x;
+        mouse.y = e.y;
+      });
+      window.addEventListener('mouseout', () => {
+        mouse.x = -1000;
+        mouse.y = -1000;
+      });
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initParticles();
+      });
+      let particles = [];
+      // 小屏幕减少粒子数量，降低动画需要处理的对象数。
+      const particleCount = window.innerWidth < 768 ? 40 : 65;
+      // 粒子类把每个点的位置、速度、半径、移动和绘制行为放在一起。
+      class Particle {
+        // 构造函数为粒子随机设置起点、移动速度和基础半径。
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * 1;
+          this.vy = (Math.random() - 0.5) * 1;
+          this.baseRadius = Math.random() * 1.5 + 1;
+          this.radius = this.baseRadius;
+        }
+        // 每帧先处理边界和移动，再根据鼠标距离计算排斥力。
+        update() {
+          if (this.x < 0 || this.x > width) this.vx = -this.vx;
+          if (this.y < 0 || this.y > height) this.vy = -this.vy;
+          this.x += this.vx;
+          this.y += this.vy;
+          let dx = mouse.x - this.x;
+          let dy = mouse.y - this.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < mouse.radius && distance > 0) {
+            const forceDirectionX = dx / distance;
+            const forceDirectionY = dy / distance;
+            const force = (mouse.radius - distance) / mouse.radius;
+            this.x -= forceDirectionX * force * 5;
+            this.y -= forceDirectionY * force * 5;
+            this.radius = this.baseRadius + force * 2;
+          } else {
+            this.radius = this.baseRadius;
+          }
+        }
+        // 按系统深浅色主题选取粒子颜色，再在当前位置画圆。
+        draw() {
+          const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.4)';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      // 初始化粒子后，动画函数通过 requestAnimationFrame 持续绘制下一帧。
+      function initParticles() {
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+          particles.push(new Particle());
+        }
+      }
+      // 动画每帧清空旧画面，更新并绘制粒子，再连接彼此靠近的点。
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update();
+          particles[i].draw();
+          for (let j = i + 1; j < particles.length; j++) {
+            let dx = particles[i].x - particles[j].x;
+            let dy = particles[i].y - particles[j].y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            // 两点距离小于阈值时才画连线，避免给过远的粒子连线。
+            if (distance < 100) {
+              const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+              ctx.strokeStyle = isDark ? `rgba(255,255,255,${0.15 - distance/800})` : `rgba(0,0,0,${0.1 - distance/1000})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+      initParticles();
+      animate();
+    </script>
+
+    <!-- is:global 使文章排版和主题规则能作用于插槽生成的 Markdown 标签。 -->
+    <style is:global>
+      /* 全局基础设置 */
+      /* CSS 变量定义主题颜色；暗色媒体查询会覆盖相应变量。 */
+      :root {
+        --bg-color: #f9f9f9;
+        --text-color: #333;
+        --card-bg: rgba(255, 255, 255, 0.85);
+        --card-border: #ebebeb;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-color: #121212;
+          --text-color: #e0e0e0;
+          --card-bg: rgba(30, 30, 30, 0.85);
+          --card-border: #333;
+        }
+      }
+      /* 背景画布固定铺满视口，且不会挡住卡片上的交互。 */
+      #particle-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
+        pointer-events: none;
+      }
+      /* 页面基础布局为较长的文章预留上下空间并限制横向溢出。 */
+      body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        transition: background-color 0.3s, color 0.3s;
+        min-height: 100vh;
+        padding: 4rem 0;
+        overflow-x: hidden;
+      }
+      .container {
+        width: 100%;
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        z-index: 10;
+      }
+      /* 文章外壳使用半透明背景、模糊和圆角形成毛玻璃卡片。 */
+      .card {
+        display: flex;
+        flex-direction: column;
+        padding: 3rem;
+        background-color: var(--card-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        animation: fadeInUp 0.8s ease;
+      }
+      /* 标题和日期放在正文之前，并用底边分隔。 */
+      .article-header {
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--card-border);
+        padding-bottom: 1rem;
+      }
+      .article-header h1 {
+        font-size: 2.2rem;
+        margin: 0 0 1rem 0;
+      }
+      .article-header .date {
+        color: #888;
+        font-size: 0.9rem;
+      }
+      /* 这些规则设置 Markdown 转换生成的标题、段落、列表、链接、引用、代码和表格。 */
+      /* 标题 */
+      .content-body h1, .content-body h2, .content-body h3, .content-body h4 {
+        margin-top: 2rem;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+      .content-body h2 {
+        border-bottom: 1px solid var(--card-border);
+        padding-bottom: 0.5rem;
+        margin-top: 2.5rem;
+      }
+      /* 段落和加粗 */
+      .content-body p {
+        line-height: 1.8;
+        color: #555;
+        margin-bottom: 1.2rem;
+        font-size: 1.05rem;
+      }
+      .content-body strong {
+        font-weight: 700;
+        color: var(--text-color);
+      }
+      /* 列表 */
+      .content-body ul, .content-body ol {
+        line-height: 1.8;
+        color: #555;
+        margin-bottom: 1.5rem;
+        padding-left: 1.5rem;
+      }
+      .content-body li {
+        margin-bottom: 0.5rem;
+      }
+      /* 超链接 */
+      .content-body a {
+        color: #2563eb;
+        text-decoration: none;
+        border-bottom: 1px dashed #2563eb;
+      }
+      .content-body a:hover {
+        border-bottom: 1px solid #2563eb;
+      }
+      /* 引用块 */
+      .content-body blockquote {
+        border-left: 4px solid #ccc;
+        margin: 0 0 1.5rem 0;
+        padding-left: 1rem;
+        color: #666;
+        font-style: italic;
+        background: rgba(0,0,0,0.02);
+        padding: 1rem;
+        border-radius: 0 8px 8px 0;
+      }
+      /* 行内代码 */
+      .content-body code {
+        background: #eee;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.9em;
+        color: #e83e8c;
+      }
+      /* 代码块 */
+      .content-body pre {
+        background: #1e1e1e;
+        padding: 1.2rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin-bottom: 1.5rem;
+      }
+      .content-body pre code {
+        background: transparent;
+        padding: 0;
+        color: #fff;
+        font-size: 0.95rem;
+      }
+      /* ================================== */
+      /* 表格美化（最容易出错的地方，强制生效） */
+      /* ================================== */
+      .content-body table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin-bottom: 2rem !important;
+        display: table !important;
+        font-size: 0.95rem;
+      }
+      .content-body th, .content-body td {
+        border: 1px solid var(--card-border) !important;
+        padding: 0.75rem 1rem !important;
+        text-align: left !important;
+      }
+      .content-body th {
+        background-color: rgba(0,0,0,0.04) !important;
+        font-weight: 600;
+      }
+      .content-body tr:nth-child(even) {
+        background-color: rgba(0,0,0,0.01);
+      }
+      /* prefers-color-scheme 根据系统主题切换正文、表格和代码颜色。 */
+      /* 暗黑模式颜色适配 */
+      @media (prefers-color-scheme: dark) {
+        .content-body p, .content-body ul, .content-body ol, .content-body blockquote {
+          color: #aaa;
+        }
+        .content-body blockquote {
+          background: rgba(255,255,255,0.02);
+          border-left-color: #555;
+        }
+        .content-body code {
+          background: #333;
+          color: #ff7b72;
+        }
+        .content-body th {
+          background-color: rgba(255,255,255,0.05) !important;
+        }
+        .content-body tr:nth-child(even) {
+          background-color: rgba(255,255,255,0.02);
+        }
+      }
+      /* 返回链接把读者带回博客文章列表。 */
+      .back-btn {
+        display: inline-block;
+        margin-bottom: 2rem;
+        color: #888;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: color 0.2s;
+      }
+      .back-btn:hover {
+        color: var(--text-color);
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </body>
 </html>

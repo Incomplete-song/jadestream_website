@@ -1,20 +1,30 @@
 ---
+// 从内容集合 API 引入文章类型、文章读取函数和 Markdown 渲染函数。
 import { type CollectionEntry, getCollection, render } from 'astro:content';
+// 这里引入我们之前重写过的、带有毛玻璃和粒子特效的外壳
 import BlogPost from '../../layouts/BlogPost.astro';
 
+// Astro 在构建时调用 getStaticPaths，为集合中的每篇文章生成一个静态网址。
 export async function getStaticPaths() {
-	const posts = await getCollection('blog');
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
+  // 读取博客集合；返回的每个 post 都会对应一个详情页。
+  const posts = await getCollection('blog');
+  // map 把文章 id 放进 URL 参数，并把完整文章对象作为页面 props。
+  return posts.map((post) => ({
+    params: { slug: post.id }, // 使用文件名或配置的 slug 作为网址
+    props: post,
+  }));
 }
+// Props 说明此动态页面收到的 Astro.props 是一篇 blog 集合文章。
 type Props = CollectionEntry<'blog'>;
 
+// Astro.props 由上面的 getStaticPaths 为当前路径提供。
 const post = Astro.props;
+// render 将 Markdown 内容转换成 Astro 可渲染的 Content 组件。
 const { Content } = await render(post);
 ---
 
+<!-- 把文章数据传递给外壳，把文章内容塞进插槽里 -->
+<!-- 把文章元数据作为属性交给全局外壳；Content 会填入外壳的 slot。 -->
 <BlogPost {...post.data}>
-	<Content />
+  <Content />
 </BlogPost>

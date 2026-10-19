@@ -1,112 +1,283 @@
 ---
-import { Image } from 'astro:assets';
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
-import Header from '../../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+//    这三行是把src/content/blog 里的 .md 文件全抓出来，然后按时间从新到旧排序，
+//    如果需要改成按字母排序的话需要更改sort逻辑
+
+import { getCollection } from 'astro:content';
+const posts = await getCollection('blog');
+posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
-			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section>
-				<ul>
-					{posts.map((post) => (
-						<li>
-							<a href={`/blog/${post.id}/`}>
-								{post.data.heroImage && (
-									<Image width={720} height={360} src={post.data.heroImage} alt="" />
-								)}
-								<h4 class="title">{post.data.title}</h4>
-								<p class="date">
-									<FormattedDate date={post.data.pubDate} />
-								</p>
-							</a>
-						</li>
-					))}
-				</ul>
-			</section>
-		</main>
-		<Footer />
-	</body>
+<!DOCTYPE html>
+<!-- 文章列表使用独立的 HTML 页面骨架。 -->
+<html lang="zh-CN">
+  <!-- head 提供页面元信息和字体资源。 -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/jadestream.png" />
+    <title>文章 - 筠溪</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <!-- 背景粒子绘制在画布中；CSS 负责把画布放到内容后方。 -->
+    <canvas id="particle-canvas"></canvas>
+    <main class="container">
+      <a href="/" class="back-btn">← 返回首页👀</a>
+      <header class="profile">
+        <h1>所有文章</h1>
+      </header>
+      
+      <!-- map 将每篇文章转换成一张卡片，列表长度由内容集合决定。 -->
+      <section class="links">
+        {posts.map((post) => (
+          // 注意这里：把 post.slug 换成了 post.id，确保绝对能找到文章
+          <a href={`/blog/${post.id}/`} class="card article-card">
+            <h2>{post.data.title}</h2>
+            <p>{post.data.description}</p>
+            <span class="date">{post.data.pubDate.toLocaleDateString('zh-CN')}</span>
+          </a>
+        ))}
+      </section>
+    </main>
+
+
+    <!-- script 中的原生 JavaScript 在浏览器运行，负责背景粒子动画。 -->
+    <script>
+      // 获取页面中的 canvas，并创建浏览器 2D 绘图上下文。
+      const canvas = document.getElementById('particle-canvas');
+      const ctx = canvas.getContext('2d');
+      // 画布的像素尺寸跟随视口；宽高也用于粒子边界判断。
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+      // 鼠标初始放在屏幕外；radius 定义鼠标影响粒子的范围。
+      let mouse = {
+        x: -1000, y: -1000, radius: 120
+      };
+      // 鼠标位置参与排斥计算；窗口变化时重设画布并初始化粒子。
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.x;
+        mouse.y = e.y;
+      });
+      window.addEventListener('mouseout', () => {
+        mouse.x = -1000;
+        mouse.y = -1000;
+      });
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        initParticles();
+      });
+      let particles = [];
+
+      const particleCount = window.innerWidth < 768 ? 40 : 65;// 小屏幕减少粒子数量，降低动画需要处理的对象数。
+
+      // 类封装单个粒子的初始状态、移动规则和绘制步骤。
+      class Particle {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * 1;                // 构造函数为粒子随机设置起点、移动速度和基础半径。
+          this.vy = (Math.random() - 0.5) * 1;
+          this.baseRadius = Math.random() * 1.5 + 1;
+          this.radius = this.baseRadius;
+        }
+        // 每帧先处理边界和移动，再根据鼠标距离计算排斥力。
+        update() {
+          if (this.x < 0 || this.x > width) this.vx = -this.vx;
+          if (this.y < 0 || this.y > height) this.vy = -this.vy;
+          this.x += this.vx;
+          this.y += this.vy;
+          let dx = mouse.x - this.x;
+          let dy = mouse.y - this.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < mouse.radius && distance > 0) {
+            const forceDirectionX = dx / distance;
+            const forceDirectionY = dy / distance;
+            const force = (mouse.radius - distance) / mouse.radius;   //计算"推力"
+            this.x -= forceDirectionX * force * 5;
+            this.y -= forceDirectionY * force * 5;
+            this.radius = this.baseRadius + force * 2;
+          } else {
+            this.radius = this.baseRadius;
+          }
+        }
+        // 按系统深浅色主题选取粒子颜色，再在当前位置画圆。
+        draw() {
+          const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.4)';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      // 初始化粒子数组，并在 requestAnimationFrame 驱动的循环中逐帧更新。
+      function initParticles() {
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+          particles.push(new Particle());
+        }
+      }
+      // 动画每帧清空旧画面，更新并绘制粒子，再连接彼此靠近的点。
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update();
+          particles[i].draw();
+          for (let j = i + 1; j < particles.length; j++) {
+            let dx = particles[i].x - particles[j].x;
+            let dy = particles[i].y - particles[j].y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            // 两点距离小于阈值时才画连线，避免给过远的粒子连线。
+            if (distance < 100) {
+              const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+              ctx.strokeStyle = isDark ? `rgba(255,255,255,${0.15 - distance/800})` : `rgba(0,0,0,${0.1 - distance/1000})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+      initParticles();
+      animate();
+    </script>
+
+
+    <!-- is:global 表示这里的 CSS 规则会应用到页面中的全局元素。 -->
+    <style is:global>
+      /* 根节点变量提供亮色和暗色主题共用的颜色配置。 */
+      :root {
+        --bg-color: #f9f9f9;
+        --text-color: #333;
+        --card-bg: rgba(255, 255, 255, 0.7);
+        --card-border: #ebebeb;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-color: #121212;
+          --text-color: #e0e0e0;
+          --card-bg: rgba(30, 30, 30, 0.7);
+          --card-border: #333;
+        }
+      }
+      /* 固定画布覆盖视口并置于内容后面。 */
+      #particle-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1;
+        pointer-events: none;
+      }
+      body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        transition: background-color 0.3s, color 0.3s;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-x: hidden;
+      }
+      /* 主容器限制行宽；文章卡片以网格方式纵向排列。 */
+      .container {
+        width: 100%;
+        max-width: 680px;
+        padding: 2rem 1.5rem;
+        z-index: 10;
+      }
+      .profile {
+        text-align: center;
+        margin-bottom: 2rem;
+        animation: fadeInDown 0.8s ease;
+      }
+      .profile h1 {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+      }
+      .links {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+        animation: fadeInUp 0.8s ease;
+      }
+      /* 毛玻璃卡片承载文章标题、摘要和发布日期。 */
+      .card {
+        display: flex;
+        flex-direction: column;
+        padding: 1.5rem;
+        background-color: var(--card-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+      }
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+        border-color: #ccc;
+      }
+      .card h2 {
+        font-size: 1.25rem;
+        margin: 0 0 0.5rem 0;
+        font-weight: 600;
+      }
+      .card p {
+        color: #777;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin: 0 0 1rem 0;
+      }
+      .date {
+        font-size: 0.85rem;
+        color: #999;
+        font-variant-numeric: tabular-nums;
+      }
+      /* 返回链接提供回到首页的导航入口。 */
+      .back-btn {
+        display: inline-block;
+        margin-bottom: 2rem;
+        color: #888;
+        text-decoration: none;
+        font-size: 0.95rem;
+        transition: color 0.2s;
+      }
+      .back-btn:hover {
+        color: var(--text-color);
+      }
+      /* 页面进入时使用的淡入动画关键帧。 */
+      @keyframes fadeInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </body>
 </html>

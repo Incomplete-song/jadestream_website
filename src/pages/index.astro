@@ -1,357 +1,434 @@
 ---
-// Astro 文件开头的 Frontmatter 由这对 --- 标记；其中代码在服务端构建页面时运行。
-// 本页没有需要预先读取的数据，所以 Frontmatter 只作说明；浏览器交互放在下方 script 中。
+// 1. 引入获取文章的方法
+import { getCollection } from 'astro:content';
+
+// 2. 获取所有文章并按日期降序排序
+const allPosts = await getCollection('blog');
+allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// 3. 提取最新的一篇文章
+const latestPost = allPosts[0];
 ---
 
 <!DOCTYPE html>
-<!-- 页面主体是标准 HTML 文档；Astro 会把模板内容渲染后交给浏览器。 -->
 <html lang="zh-CN">
-  <!-- head 保存页面编码、移动端视口、标题、搜索摘要和字体资源。 -->
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="/jadestream.png" />
     <title>筠溪的主页</title>
-    <meta name="description" content="筠溪的个人自留地 - 无限进步" />
-    <!-- 引入 Inter 字体 -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/touxiang.png" />
   </head>
 
-  <!-- body 是用户可见页面内容与前端交互的容器。 -->
   <body>
-    <!-- 背景粒子画布 -->
-    <canvas id="particle-canvas"></canvas>
+    <!-- 背景层 -->
+    <div class="bg-wallpaper"></div>
 
-    <main class="container">
-      <!-- 头部区域 -->
-      <header class="profile">
-        <h1>Hi, I'm jadestream</h1>
-        <p class="quote">“ 梦想是成为全栈开发者！！！🤩 ”</p>
-        <div class="clock" id="clock">00 : 00 : 00</div>
-      </header>
+    <!-- 便当盒容器 -->
+    <main class="bento-container">
+      
+      <!-- ========== 左侧列 ========== -->
+      <div class="col left-col">
+        <div class="card profile-card">
+          <div class="profile-header">
+            <img src="/touxiang.png" class="avatar" alt="avatar" />
+            <h2>jadestream <span>(开发ing)</span></h2>
+          </div>
+          <div class="nav-links">
+            <p class="nav-title">GENERAL</p>
+            <!-- 更新了 href 链接 -->
+            <!-- href后的内容是页面代码文件名称 -->
+            <!--  -->
+            <a href="/recent" class="nav-item"><span class="icon">📚</span> 最近更新</a>
+            <a href="/posts" class="nav-item"><span class="icon">💠</span> 所有文章</a>
+            <a href="/about" class="nav-item"><span class="icon">💬</span> 关于我</a>
+            <a href="/share" class="nav-item"><span class="icon">⭐</span> 推荐分享</a>
+            <a href="/updatelog" class="nav-item"><span class="icon">😎</span> 更新日志</a>
 
-      <!-- 卡片网格区域 -->
-      <section class="links">
-        <!-- 卡片 1 -->
-        <a href="/blog" class="card">
-          <h2>博客文章</h2>
-          <p>个人各种学习经验</p>
-        </a>
+          </div>
+        </div>
 
-        <!-- 卡片 2 -->
-        <a href="/about" class="card">
-          <h2>关于我</h2>
-          <p>“无限进步”</p>
-        </a>
+        <!-- 动态最新文章卡片 -->
+        <div class="card latest-post-card">
+          <p class="card-title">最新文章</p>
+          {latestPost ? (
+            <a href={`/blog/${latestPost.id}/`} class="latest-post-link">
+              <div class="post-info">
+                <div class="post-cover" style="background-image: url('/background.png'); background-size: cover;"></div>
+                <div class="post-text">
+                  <h4>{latestPost.data.title}</h4>
+                  <p>{latestPost.data.description}</p>
+                  <span class="date">
+                    {latestPost.data.pubDate.toLocaleDateString('zh-CN')}
+                  </span>
+                </div>
+              </div>
+            </a>
+          ) : (
+            <div class="post-info">
+              <p style="color: #888; font-size: 0.9rem;">暂无文章，快去写一篇吧！</p>
+            </div>
+          )}
+        </div>
+      </div>
 
-        <!-- 卡片 3 -->
-        <a href="https://github.com/Incomplete-song?tab=repositories" target="_blank" class="card">
-          <h2>GitHub</h2>
-          <p>github主页，开源代码都在这</p>
-        </a>
+      <!-- ========== 中间列 ========== -->
+      <div class="col center-col">
+        <div class="card gallery-card">
+          <div class="gallery-inner">
+            <div class="img-placeholder" style="background: #ffe4e1;">🐱</div>
+            <div class="img-placeholder" style="background: #e0ffff;">🌻</div>
+            <div class="img-placeholder" style="background: #f5f5dc;">📎</div>
+          </div>
+        </div>
 
-        <!-- 卡片 4 -->
-        <a href="#" class="card">
-          <h2>施工中... </h2>
-          <p>别点了，再点你也打不开💤</p>
-        </a>
-      </section>
+        <!-- 中间问好卡片 -->
+        <div class="card greeting-card">
+          <div class="greeting-avatar">
+            <img src="/touxiang.png" alt="头像" />
+          </div>
+          <h1 class="greeting-text" id="greeting">Good Morning</h1>
+          <h2 class="name-text">I'm <span>Jade</span>, Nice to meet you!</h2>
+          
+          <div class="social-links">
+            <!-- GitHub 官方图标 -->
+            <a href="https://github.com/Incomplete-song" target="_blank" class="social-btn github" title="GitHub">
+              <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor" aria-hidden="true">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+              </svg>
+            </a>
+            
+            <!-- 网易云官方标准图标 -->
+            <a href="https://music.163.com/#/user/home?id=576516878" target="_blank" class="social-btn netease" title="网易云音乐">
+              <svg viewBox="0 0 1024 1024" width="20" height="20" fill="currentColor">
+                <path d="M512 0c282.763 0 512 229.237 512 512s-229.237 512-512 512S0 794.763 0 512 229.237 0 512 0zm0 80.835C273.835 80.835 80.835 273.835 80.835 512S273.835 943.165 512 943.165 943.165 750.165 943.165 512 750.165 80.835 512 80.835zm93.866 660.097c-21.739 15.236-59.775 22.59-92.987 22.59-69.378 0-122.882-33.923-122.882-89.358 0-57.045 41.528-87.87 107.77-92.365 44.288-3.023 74.042-15.504 74.042-41.215 0-25.381-30.597-39.555-68.308-39.555-45.885 0-82.353 19.927-107.086 38.654l-35.185-57.815c30.914-24.016 81.346-48.701 146.235-48.701 88.87 0 148.155 43.32 148.155 109.313 0 78.87-63.32 104.13-137.406 108.537-38.105 2.13-53.258 10.918-53.258 28.35 0 19.014 20.685 28.643 50.246 28.643 22.72 0 48.607-6.539 64.824-17.52l27.07 51.134zm-240.456-350.12c-46.627 0-84.405 35.128-84.405 78.444 0 43.313 37.778 78.444 84.405 78.444 46.627 0 84.405-35.131 84.405-78.444 0-43.316-37.778-78.444-84.405-78.444zm0 126.108c-23.152 0-41.91-21.412-41.91-47.664 0-26.252 18.758-47.664 41.91-47.664 23.152 0 41.91 21.412 41.91 47.664 0 26.252-18.758 47.664-41.91 47.664z"></path>
+              </svg>
+            </a>
+
+            <a href="#" class="social-btn xiaohongshu">书</a>
+            <a href="#" class="social-btn email">✉</a>
+          </div>
+        </div>
+
+        <div class="bottom-grid">
+          <div class="card recommendation-card">
+            <p class="card-title">随机推荐</p>
+            <div class="rec-info">
+              <div class="rec-icon">🎵</div>
+              <div>
+                <h4>Audio & Video</h4>
+                <p class="desc">编解码、推流和处理链路拆开来讲...</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="right-bottom-group">
+            <div class="card music-player">
+              <span class="music-icon">🎵</span>
+              <div class="music-info">
+                <p>Close To You</p>
+                <div class="progress-bar"><div class="progress"></div></div>
+              </div>
+              <button class="play-btn">▶</button>
+            </div>
+            
+            <div class="like-container">
+              <button class="like-btn" id="likeBtn">
+                <span class="heart">❤️</span>
+                <span class="count" id="likeCount">1711</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== 右侧列 ========== -->
+      <div class="col right-col">
+        <button class="write-btn">
+          <span>✍️</span> 写文章
+        </button>
+
+        <div class="card clock-card">
+          <div class="digital-clock" id="clock">10:58</div>
+        </div>
+
+        <div class="card calendar-card">
+          <div class="calendar-header">
+            <span id="current-month">2026/10/20 周二</span>
+          </div>
+          <div class="calendar-grid" id="calendar-grid"></div>
+        </div>
+      </div>
     </main>
 
-    <!-- 页面所有的 JavaScript 逻辑 -->
     <script>
-      // --- 1. 动态时钟 ---
-      // 读取当前本地时间、补齐两位数字，并写入页面时钟。
-      function updateClock() {
+      // --- 1. 问候语 & 实时时钟 ---
+      function updateTime() {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        const clockElement = document.getElementById('clock');
-        if (clockElement) {
-          clockElement.textContent = `${hours} : ${minutes} : ${seconds}`;
+        document.getElementById('clock').textContent = `${hours}:${minutes}`;
+
+        const hour = now.getHours();
+        let greeting = 'Good Evening';
+        if (hour < 12) greeting = 'Good Morning';
+        else if (hour < 18) greeting = 'Good Afternoon';
+        document.getElementById('greeting').textContent = greeting;
+      }
+      updateTime();
+      setInterval(updateTime, 1000);
+
+      // --- 2. 动态日历生成 ---
+      function generateCalendar() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const today = now.getDate();
+
+        const days = ['日', '一', '二', '三', '四', '五', '六'];
+        document.getElementById('current-month').textContent = `${year}/${month + 1}/${today} 周${days[now.getDay()]}`;
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        const grid = document.getElementById('calendar-grid');
+        grid.innerHTML = '';
+
+        const weekDays = ['一', '二', '三', '四', '五', '六', '日'];
+        weekDays.forEach(day => {
+          grid.innerHTML += `<div class="cal-head">${day}</div>`;
+        });
+
+        let paddingDays = firstDay === 0 ? 6 : firstDay - 1;
+        for (let i = 0; i < paddingDays; i++) {
+          grid.innerHTML += `<div class="cal-empty"></div>`;
+        }
+
+        for (let i = 1; i <= daysInMonth; i++) {
+          const isToday = i === today ? 'today' : '';
+          grid.innerHTML += `<div class="cal-day ${isToday}">${i}</div>`;
         }
       }
-      updateClock();
-      setInterval(updateClock, 1000);
+      generateCalendar();
 
+      // --- 3. 点赞交互 ---
+      let likes = 1711;
+      let isLiked = false;
+      const likeBtn = document.getElementById('likeBtn');
+      const likeCount = document.getElementById('likeCount');
 
-      // --- 2. 鼠标互动粒子特效（优化不卡顿版） ---
-      // canvas 是背景绘图画布；2D context 提供绘制粒子和连线的方法。
-      const canvas = document.getElementById('particle-canvas');
-      const ctx = canvas.getContext('2d');
-      
-      let width = canvas.width = window.innerWidth;
-      let height = canvas.height = window.innerHeight;
-
-      // 鼠标位置，默认在屏幕外
-      let mouse = { x: -1000, y: -1000, radius: 120 };
-
-      // 监听鼠标移动、离开页面和窗口尺寸变化，更新粒子系统所需的状态。
-      window.addEventListener('mousemove', (e) => {
-        mouse.x = e.x;
-        mouse.y = e.y;
+      likeBtn.addEventListener('click', () => {
+        if (!isLiked) {
+          likes++;
+          likeBtn.classList.add('liked');
+        } else {
+          likes--;
+          likeBtn.classList.remove('liked');
+        }
+        isLiked = !isLiked;
+        likeCount.textContent = likes;
       });
-      
-      // 鼠标移出窗口时隐藏互动效果
-      window.addEventListener('mouseout', () => {
-        mouse.x = -1000;
-        mouse.y = -1000;
-      });
-
-      window.addEventListener('resize', () => {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-        initParticles();
-      });
-
-      let particles = [];
-      // 黄金数量，兼顾美观和性能。如果是手机屏幕，自动减少粒子数量
-      const particleCount = window.innerWidth < 768 ? 40 : 65; 
-
-      // 每个 Particle 对象保存一个粒子的位置、速度和绘制半径。
-      class Particle {
-        constructor() {
-          this.x = Math.random() * width;
-          this.y = Math.random() * height;
-          this.vx = (Math.random() - 0.5) * 1;
-          this.vy = (Math.random() - 0.5) * 1;
-          this.baseRadius = Math.random() * 1.5 + 1;
-          this.radius = this.baseRadius;
-        }
-        update() {
-          // 边界反弹
-          if (this.x < 0 || this.x > width) this.vx = -this.vx;
-          if (this.y < 0 || this.y > height) this.vy = -this.vy;
-
-          // 基础移动
-          this.x += this.vx;
-          this.y += this.vy;
-
-          // 鼠标互动逻辑：排斥力（推开粒子，防止聚集卡顿）
-          let dx = mouse.x - this.x;
-          let dy = mouse.y - this.y;
-          let distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance < mouse.radius && distance > 0) {
-            // 计算推力方向（远离鼠标）
-            const forceDirectionX = dx / distance;
-            const forceDirectionY = dy / distance;
-            // 距离越近，排斥力越大
-            const force = (mouse.radius - distance) / mouse.radius;
-            const directionX = forceDirectionX * force * 5; // 可调力度
-            const directionY = forceDirectionY * force * 5;
-            
-            // 加上推力，导致粒子散开
-            this.x -= directionX;
-            this.y -= directionY;
-            
-            // 视觉反馈：靠近鼠标时稍微变大一点
-            this.radius = this.baseRadius + force * 2;
-          } else {
-            // 恢复原大小
-            this.radius = this.baseRadius;
-          }
-        }
-        draw() {
-          const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.4)';
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      // 按屏幕尺寸重新创建粒子数组；动画循环每帧更新并绘制它们。
-      function initParticles() {
-        particles = [];
-        for (let i = 0; i < particleCount; i++) {
-          particles.push(new Particle());
-        }
-      }
-
-      function animate() {
-        ctx.clearRect(0, 0, width, height);
-        
-        for (let i = 0; i < particles.length; i++) {
-          particles[i].update();
-          particles[i].draw();
-
-          // 绘制连线（优化：只有距离小于 100 才连线，且 j = i + 1 避免重复计算）
-          for (let j = i + 1; j < particles.length; j++) {
-            let dx = particles[i].x - particles[j].x;
-            let dy = particles[i].y - particles[j].y;
-            let distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < 100) {
-              const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-              // 距离越近，线越清晰
-              ctx.strokeStyle = isDark ? `rgba(255,255,255,${0.15 - distance/800})` : `rgba(0,0,0,${0.1 - distance/1000})`;
-              ctx.lineWidth = 1;
-              ctx.beginPath();
-              ctx.moveTo(particles[i].x, particles[i].y);
-              ctx.lineTo(particles[j].x, particles[j].y);
-              ctx.stroke();
-            }
-          }
-        }
-        requestAnimationFrame(animate);
-      }
-
-      initParticles();
-      animate();
     </script>
 
-<!-- 页面所有的 CSS 样式 -->
-    <!-- is:global 让这些样式作用于整个页面，而不是被 Astro 限定到组件内。 -->
     <style is:global>
-      /* 全局基础设置与主题变量 */
-      /* CSS 自定义属性集中保存主题颜色，后续规则通过 var() 读取。 */
+      /* --- 全局基础样式 --- */
       :root {
-        --bg-color: #f9f9f9;
-        --text-color: #333;
-        /* ★ 核心修改1：透明度大幅降低到 0.15，让它近乎透明 */
-        --card-bg: rgba(255, 255, 255, 0.15); 
-        /* ★ 核心修改2：边框稍微亮一点，模拟玻璃反光边缘 */
-        --card-border: rgba(255, 255, 255, 0.8); 
+        --bg-color: #f4f7f6;
+        --card-bg: rgba(255, 255, 255, 0.2); /* 玻璃白 */
+        --card-border: rgba(255, 255, 255, 0.9);
+        --text-main: #333;
+        --text-sub: #888;
+        --theme-color: #20b2aa;
+        --card-radius: 24px;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
       }
 
-      /* 强制深色模式也使用同样的透明玻璃，防止变黑 */
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg-color: #121212;
-          --text-color: #e0e0e0;
-          --card-bg: rgba(255, 255, 255, 0.15); 
-          --card-border: rgba(255, 255, 255, 0.8);
-        }
-      }
-
-      /* 粒子画布样式 */
-      #particle-canvas {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: -1; 
-        pointer-events: none;
-      }
-
-      /* 页面基础样式 */
       body {
         margin: 0;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        /* ★ 核心修改3：换一个色彩饱和度高一点的渐变，这样毛玻璃透出来的颜色才好看 */
-        background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); 
-        color: var(--text-color);
-        transition: background-color 0.3s, color 0.3s;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
         min-height: 100vh;
         display: flex;
-        align-items: center;
         justify-content: center;
-        overflow-x: hidden; 
+        align-items: center;
+        overflow-x: hidden;
+        position: relative;
       }
 
-      /* 容器限制最大宽度 */
-      .container {
-        width: 100%;
-        max-width: 680px;
-        padding: 2rem 1.5rem;
-        z-index: 10; 
+      /* --- 全屏壁纸层 --- */
+      .bg-wallpaper {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        z-index: -1;
+        background-image: url('/background.png'); 
+        background-size: cover;
+        background-position: center;
+        filter: brightness(0.9); 
       }
 
-      /* 头部样式 */
-      .profile {
-        text-align: center;
-        margin-bottom: 3rem;
-        animation: fadeInDown 0.8s ease;
-      }
-
-      .profile h1 {
-        font-size: 2.2rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-        color: #111; /* 深色字 */
-      }
-
-      .quote {
-        color: #333; 
-        font-size: 0.95rem;
-        margin-bottom: 1.5rem;
-      }
-
-      /* 时钟样式 */
-      .clock {
-        font-size: 1.2rem;
-        font-weight: 500;
-        font-variant-numeric: tabular-nums;
-        letter-spacing: 2px;
-        color: #333; 
-      }
-      @media (prefers-color-scheme: dark) {
-        .clock { color: #333; }
-      }
-
-      /* 卡片网格布局 */
-      .links {
+      /* --- 便当盒布局 --- */
+      .bento-container {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 1.2rem;
-        animation: fadeInUp 0.8s ease;
+        grid-template-columns: 280px 400px 320px;
+        gap: 24px;
+        max-width: 1120px;
+        padding: 40px 20px;
+        box-sizing: border-box;
       }
 
-      @media (min-width: 600px) {
-        .links {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
+      .col { display: flex; flex-direction: column; gap: 24px; }
 
-      /* ★ 核心修改4：卡片主体 */
+      /* --- 通用卡片样式 --- */
       .card {
-        display: flex;
-        flex-direction: column;
-        padding: 1.5rem;
-        background-color: var(--card-bg); /* 极低透明度的白色 */
-        backdrop-filter: blur(20px);      /* 强力模糊背景 */
+        background: var(--card-bg);
+        backdrop-filter: blur(20px);                    /*更改卡片背后的图片的模糊度，值越大背后的图越模糊，卡片上的字看的越清楚*/
         -webkit-backdrop-filter: blur(20px);
-        border: 1px solid var(--card-border); /* 亮白色边框 */
-        border-radius: 16px; 
+        border: 1px solid var(--card-border);
+        border-radius: var(--card-radius);
+        box-shadow: var(--shadow);
+        padding: 24px;
+        transition: transform 0.3s ease;
+      }
+      
+      .card:hover { transform: translateY(-4px); }
+
+      /* --- 左侧列样式 --- */
+      .profile-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+      .avatar {
+        width: 48px; height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #ffe4e1;
+        padding: 2px;
+      }
+      .profile-header h2 { font-size: 1.2rem; margin: 0; display: flex; align-items: center; gap: 6px; }
+      .profile-header span { font-size: 0.8rem; color: var(--theme-color); font-weight: normal; }
+      
+      .nav-title { font-size: 0.75rem; color: var(--text-sub); letter-spacing: 1px; margin-bottom: 12px; }
+      .nav-links { display: flex; flex-direction: column; gap: 8px; }
+      .nav-item {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 16px; border-radius: 16px;
+        text-decoration: none; color: var(--text-main);
+        font-size: 0.95rem; font-weight: 500;
+        transition: background 0.2s;
+      }
+      .nav-item:hover { background: rgba(255,255,255,0.6); }
+      .nav-item.active { background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.03); color: var(--theme-color); }
+      .nav-item .icon { font-size: 1.2rem; }
+
+      .latest-post-card { flex: 1; display: flex; flex-direction: column; }
+      .card-title { font-size: 0.85rem; color: var(--text-sub); margin: 0 0 16px 0; }
+      .post-info { display: flex; gap: 12px; align-items: center; }
+      .post-cover { width: 56px; height: 56px; border-radius: 12px; flex-shrink: 0; }
+      .post-text h4 { margin: 0 0 4px 0; font-size: 0.95rem; line-height: 1.4; }
+      .post-text p { margin: 0 0 6px 0; font-size: 0.8rem; color: var(--text-sub); }
+      .post-text .date { font-size: 0.75rem; color: #aaa; }
+
+      .latest-post-link {
         text-decoration: none;
-        color: #111; /* 字体深色 */
-        /* ★ 核心修改5：用厚重的阴影强行把它和背景拉开层次 */
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); 
-        transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+        color: inherit;
+        display: block;
+        transition: opacity 0.2s;
+      }
+      .latest-post-link:hover { opacity: 0.8; }
+
+      /* --- 中间列样式 --- */
+      .gallery-card { padding: 12px; height: 120px; overflow: hidden; }
+      .gallery-inner { display: flex; gap: 8px; height: 100%; }
+      .img-placeholder { flex: 1; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+
+      .greeting-card { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; }
+      
+      .greeting-avatar { 
+        width: 80px; height: 80px; border-radius: 50%; background: #fff9c4;
+        display: flex; align-items: center; justify-content: center; font-size: 3rem;
+        margin-bottom: 20px; box-shadow: 0 10px 20px rgba(255, 235, 59, 0.3);
+        overflow: hidden; 
+      }
+      .greeting-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
 
-      /* 鼠标悬浮效果 */
-      .card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25); 
-        background-color: rgba(255, 255, 255, 0.3); /* 悬浮时稍微变白一点点 */
+      .greeting-text { font-size: 1.4rem; margin: 0 0 8px 0; font-weight: 600; color: #444;}
+      .name-text { font-size: 1.3rem; margin: 0 0 24px 0; font-weight: 500; color: #555;}
+      .name-text span { color: var(--theme-color); }
+      
+      .social-links { display: flex; gap: 12px; }
+      .social-btn {
+        width: 40px; height: 40px; border-radius: 12px; border: none;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; cursor: pointer; text-decoration: none; color: white;
+        transition: transform 0.2s;
+      }
+      .social-btn:hover { transform: translateY(-3px); }
+      .social-btn.github { background: #333; }
+      .social-btn.netease { background: #ec4141; }
+      .social-btn.xiaohongshu { background: #ff2442; }
+      .social-btn.email { background: #50c8e8; }
+
+      .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; height: 140px; }
+      .recommendation-card { display: flex; flex-direction: column; }
+      .rec-info { display: flex; gap: 12px; align-items: flex-start; }
+      .rec-icon { width: 40px; height: 40px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
+      .rec-info h4 { margin: 0 0 4px 0; font-size: 0.9rem; }
+      .rec-info .desc { margin: 0; font-size: 0.75rem; color: var(--text-sub); line-height: 1.4;}
+
+      .right-bottom-group { display: flex; flex-direction: column; gap: 16px; justify-content: flex-end; }
+      .music-player { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
+      .music-icon { font-size: 1.2rem; color: var(--theme-color); }
+      .music-info { flex: 1; }
+      .music-info p { margin: 0 0 6px 0; font-size: 0.85rem; font-weight: 500; }
+      .progress-bar { width: 100%; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; }
+      .progress { width: 40%; height: 100%; background: var(--theme-color); }
+      .play-btn { width: 32px; height: 32px; border-radius: 50%; border: none; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; color: var(--theme-color); display: flex; align-items: center; justify-content: center;}
+      
+      .like-container { display: flex; justify-content: flex-start; }
+      .like-btn { 
+        background: rgba(255,255,255,0.8); border: none; border-radius: 20px; 
+        padding: 8px 16px; display: flex; align-items: center; gap: 8px; cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.2s;
+      }
+      .like-btn:active { transform: scale(0.95); }
+      .like-btn .count { font-weight: bold; color: #888; }
+      .like-btn.liked .heart { animation: pop 0.3s ease; }
+      .like-btn.liked .count { color: #ff4d4f; }
+      @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+
+      /* --- 右侧列样式 --- */
+      .write-btn {
+        background: var(--theme-color); color: white;
+        border: none; border-radius: 16px; padding: 16px; font-size: 1rem; font-weight: 600;
+        cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        box-shadow: 0 4px 15px rgba(32, 178, 170, 0.3); transition: background 0.2s;
+      }
+      .write-btn:hover { background: #199a93; }
+
+      .clock-card { padding: 24px; display: flex; justify-content: center; }
+      .digital-clock {
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 3.5rem; font-weight: 700; color: #666;
+        letter-spacing: 2px; background: #e6ebea; padding: 10px 20px; border-radius: 16px;
+        box-shadow: inset 2px 2px 5px rgba(0,0,0,0.1), inset -2px -2px 5px rgba(255,255,255,0.8);
       }
 
-      .card h2 {
-        font-size: 1.15rem;
-        margin: 0 0 0.5rem 0;
-        font-weight: 600;
-        color: #000;
-      }
+      .calendar-card { flex: 1; }
+      .calendar-header { font-size: 0.9rem; color: #666; margin-bottom: 16px; font-weight: 500;}
+      .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
+      .cal-head { font-size: 0.8rem; color: #aaa; margin-bottom: 8px; }
+      .cal-day, .cal-empty { font-size: 0.85rem; padding: 6px 0; border-radius: 8px; color: #555;}
+      .cal-day.today { background: var(--theme-color); color: white; font-weight: bold; }
 
-      .card p {
-        color: #333;
-        font-size: 0.9rem;
-        line-height: 1.5;
-        margin: 0;
-      }
-
-      /* 入场动画 */
-      @keyframes fadeInDown {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+      /* --- 响应式设计 --- */
+      @media (max-width: 1024px) {
+        .bento-container {
+          grid-template-columns: 1fr;
+          max-width: 500px;
+        }
+        .gallery-card, .bottom-grid { display: none; } 
+        .left-col, .right-col, .center-col { gap: 16px; }
       }
     </style>
   </body>

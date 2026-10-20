@@ -1,0 +1,270 @@
+---
+// 推荐分享页面
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>推荐分享 - 筠溪</title>
+    <link rel="icon" type="image/png" href="/touxiang.png" />
+  </head>
+  <body>
+    <!-- 动态流光背景层 -->
+    <div class="bg-flow"></div>
+    <div class="bg-blob blob1"></div>
+    <div class="bg-blob blob2"></div>
+    <div class="bg-blob blob3"></div>
+    
+    <!-- 主容器 -->
+    <main class="full-screen-container">
+      
+      <header class="page-header">
+        <a href="/" class="back-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          返回首页
+        </a>
+        <h1 class="page-title">推荐分享</h1>
+        <p class="page-desc">这里是我平时收集的各种好用的神仙工具和网站 👇</p>
+      </header>
+      
+      <div class="tool-list">
+        
+        <!-- ChatGPT -->
+        <a href="https://chatgpt.com" target="_blank" class="tool-item">
+          <div class="tool-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+              <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.8956zm16.2068 3.7303l-5.8428-3.3685 2.0234-1.1646a.0757.0757 0 0 1 .071 0l4.8303 2.7865a4.4915 4.4915 0 0 1-.6771 8.0896V13.185a.7948.7948 0 0 0-.4048-.6791zm2.0108-3.0137l-.142-.0852-4.783-2.7582a.7712.7712 0 0 0-.7806 0L9.0106 9.138l-.0004-2.3324a.0804.0804 0 0 1 .0332-.0615l4.8303-2.7865a4.4992 4.4992 0 0 1 6.1408 1.6464zm-12.649 6.7369l-2.02-1.1685a.071.071 0 0 1-.038-.052V8.6957a4.4992 4.4992 0 0 1 7.3709-3.4541l-.1419.0804-4.7783 2.7582a.7948.7948 0 0 0-.3927.6813v6.7369zm1.1028-2.3774l2.6032-1.5005 2.6079 1.5005v3.0011l-2.6079 1.5005-2.6032-1.5005v-3.0011z"></path>
+            </svg>
+          </div>
+          <div class="tool-info">
+            <h2>ChatGPT</h2>
+            <p>OpenAI 出品的强大 AI 语言模型，解答问题、写代码、翻译全能选手。</p>
+          </div>
+        </a>
+
+        <!-- GitHub -->
+        <a href="https://github.com/Incomplete-song" target="_blank" class="tool-item">
+          <div class="tool-icon">
+            <svg viewBox="0 0 16 16" width="24" height="24" fill="currentColor">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+            </svg>
+          </div>
+          <div class="tool-info">
+            <h2>GitHub</h2>
+            <p>全球最大的代码托管平台，我的代码仓库都在这里。</p>
+          </div>
+        </a>
+
+        <!-- 模板 1 -->
+        <a href="https://你的工具链接.com" target="_blank" class="tool-item">
+          <div class="tool-icon">🚀</div>
+          <div class="tool-info">
+            <h2>工具名称 (模板 1)</h2>
+            <p>这里是工具的简介，用一两句话描述它能干嘛，或者为什么你推荐它。</p>
+          </div>
+        </a>
+
+        <!-- 模板 2 -->
+        <a href="https://你的工具链接.com" target="_blank" class="tool-item">
+          <div class="tool-icon">🛠️</div>
+          <div class="tool-info">
+            <h2>工具名称 (模板 2)</h2>
+            <p>这里是工具的简介，用一两句话描述它能干嘛，或者为什么你推荐它。</p>
+          </div>
+        </a>
+
+      </div>
+    </main>
+
+    <style is:global>
+      /* --- 基础重置 --- */
+      body { 
+        margin: 0; 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        min-height: 100vh; 
+        color: #333; 
+        overflow-x: hidden;
+        background-color: #f0f4f8; /* 浅色底，防止闪屏 */
+      }
+
+      /* --- 核心：柔和马卡龙蓝绿黄渐变背景 --- */
+      .bg-flow {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        z-index: -3;
+        /* 基础渐变：大面积留白 */
+        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+      }
+      
+      /* 发光的光斑（动态流动） */
+      .bg-blob {
+        position: fixed;
+        border-radius: 50%;
+        filter: blur(120px); 
+        z-index: -2;
+        opacity: 0.6; /* 透明度调低，更柔和 */
+        animation: float 20s infinite alternate ease-in-out;
+      }
+      
+      /* 1. 薄荷绿光斑 (左下) */
+      .blob1 {
+        width: 700px; height: 700px;
+        background: #a7f3d0; 
+        bottom: -200px; left: -150px;
+      }
+      
+      /* 2. 天空蓝光斑 (右上) */
+      .blob2 {
+        width: 600px; height: 600px;
+        background: #bfdbfe; 
+        top: -100px; right: -100px;
+        animation-delay: -5s;
+      }
+      
+      /* 3. 浅鹅黄光斑 (中间偏下) */
+      .blob3 {
+        width: 500px; height: 500px;
+        background: #fef08a; 
+        bottom: 10%; right: 20%;
+        animation-delay: -10s;
+        opacity: 0.4;
+      }
+      
+      @keyframes float {
+        0% { transform: translate(0, 0) scale(1); }
+        50% { transform: translate(40px, -60px) scale(1.1); }
+        100% { transform: translate(-30px, 40px) scale(0.9); }
+      }
+
+      /* --- 主容器 --- */
+      .full-screen-container { 
+        width: 100%; 
+        max-width: 800px; 
+        margin: 0 auto; 
+        padding: 60px 20px; 
+        min-height: 100vh;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 10;
+      }
+
+      /* --- 头部区域 --- */
+      .page-header { margin-bottom: 40px; }
+      
+      .back-btn { 
+        text-decoration: none; 
+        color: #64748b; 
+        font-size: 0.95rem; 
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 20px; 
+        background: rgba(255, 255, 255, 0.6); 
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 1);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        font-weight: 500;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+      }
+      .back-btn:hover { 
+        background: #fff; 
+        transform: translateX(-4px);
+        color: #333;
+      }
+      
+      .page-title { 
+        margin: 0 0 8px 0; 
+        font-size: 2.5rem; 
+        font-weight: 800;
+        color: #1e293b; 
+        letter-spacing: -1px;
+      }
+      .page-desc { 
+        margin: 0; 
+        color: #64748b; 
+        font-size: 1rem; 
+        font-weight: 500;
+      }
+      
+      /* --- 液态玻璃卡片列表 --- */
+      .tool-list { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 20px; 
+      }
+      
+      .tool-item { 
+        display: flex; 
+        align-items: center; 
+        gap: 20px; 
+        padding: 20px; 
+        border-radius: 24px; /* 圆角加大，更圆润 */
+        
+        /* 核心：白天使般的柔和毛玻璃 */
+        background: rgba(255, 255, 255, 0.5); /* 半透明白 */
+        backdrop-filter: blur(24px); 
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.8); 
+        
+        text-decoration: none; 
+        color: #333; 
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04); 
+        position: relative;
+        overflow: hidden;
+      }
+      
+      /* 悬浮时的流光效果 */
+      .tool-item::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%; width: 50%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+        transform: skewX(-20deg);
+        transition: 0.6s;
+      }
+      .tool-item:hover::before {
+        left: 200%;
+      }
+      
+      .tool-item:hover { 
+        background: rgba(255, 255, 255, 0.7); 
+        transform: translateY(-4px); 
+        border-color: #fff;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08); 
+      }
+      
+      /* 图标容器 */
+      .tool-icon { 
+        width: 54px; 
+        height: 54px; 
+        border-radius: 16px; 
+        background: #fff; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        font-size: 1.8rem; 
+        flex-shrink: 0;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+      }
+      
+      /* 图标颜色 */
+      .tool-icon svg { fill: #333; } 
+      
+      /* 文字区域 */
+      .tool-info h2 { margin: 0 0 6px 0; font-size: 1.2rem; font-weight: 700; color: #1e293b; }
+      .tool-info p { margin: 0; font-size: 0.95rem; color: #64748b; line-height: 1.5; }
+      
+      /* 移动端适配 */
+      @media (max-width: 600px) {
+        .page-title { font-size: 2.2rem; }
+        .tool-item { padding: 16px; gap: 16px; }
+        .tool-icon { width: 44px; height: 44px; font-size: 1.4rem; }
+      }
+    </style>
+  </body>
+</html>

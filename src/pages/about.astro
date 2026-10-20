@@ -1,249 +1,267 @@
 ---
-// Astro Frontmatter 使用 --- 包围；本页没有服务端数据，因此目前为空。
+// 关于我页面
 ---
+
 <!DOCTYPE html>
-<!-- 关于页是独立页面，拥有自己的文档结构、交互脚本和全局样式。 -->
 <html lang="zh-CN">
-  <!-- 页面标题、编码、视口和字体声明位于 head 中。 -->
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/png" href="/jadestream.png" />
     <title>关于我 - 筠溪</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/touxiang.png" />
   </head>
-  <!-- 页面内容放在 body 中；画布提供背景，主容器放置导航和介绍卡片。 -->
   <body>
-    <canvas id="particle-canvas"></canvas>
+    <!-- 全屏壁纸层 -->
+    <div class="bg-wallpaper"></div>
+
     <main class="container">
+      <!-- 返回按钮 -->
       <a href="/" class="back-btn">← 返回首页</a>
-      <header class="profile">
-        <h1>关于我</h1>
-      </header>
+
+      <!-- 主体卡片 -->
       <div class="card">
-        <p>你好，我是筠溪。这里是我的个人博客😆。</p>
-        <p>在这里我们一起学习共同成长🎉🎉🎉</p>
+        
+        <!-- 头部：头像与基本信息 -->
+        <header class="profile-header">
+          <img src="/touxiang.png" class="avatar" alt="头像" />
+          <div class="profile-text">
+            <h1>Hi, I'm 筠溪 (jadestream)</h1>
+            <p>永远想学新东西！</p>
+          </div>
+        </header>
+
+        <!-- 个人简介区块 -->
+        <section class="section">
+          <h2 class="section-title">📝 关于我</h2>
+          <p class="about-text">
+            Hi，我是jadestream。这里是我的个人博客。<br>
+            搭这个博客是为了记录我的学习经历，踩过的坑，以及分享各种好用的小工具✨<br>
+            还有个人成长记录！🎉<br>
+            这些小工具有我从网上找的开源工具，还有我自己做的(●'◡'●)<br>
+            在这里，我们一起学习，共同成长 🎉。
+          </p>
+        </section>
+
+        <!-- 技术栈区块 -->
+        <section class="section">
+          <h2 class="section-title">🛠️ 我的技术栈</h2>
+          <p class="section-desc">这些是我目前正在使用和学习的技术：</p>
+          
+          <div class="tech-grid">
+            <!-- 每一个 tech-item 就是一个技能标签 -->
+            <div class="tech-item">
+              <span class="tech-icon">🍔</span>
+              <span class="tech-name">Python</span>
+            </div>
+
+            <div class="tech-item">
+              <span class="tech-icon">🍕</span>
+              <span class="tech-name">C++/C语言</span>
+            </div>
+
+            <div class="tech-item">
+              <span class="tech-icon">🍳</span>
+              <span class="tech-name">Javascript</span>
+            </div>
+
+            <div class="tech-item">
+              <span class="tech-icon">🍟</span>
+              <span class="tech-name">YOLO / OpenCV</span>
+            </div>
+
+            <div class="tech-item">
+              <span class="tech-icon">🎨</span>
+              <span class="tech-name">ComfyUI</span>
+            </div>
+
+            <div class="tech-item">
+              <span class="tech-icon">🧂</span>
+              <span class="tech-name">画PCB</span>
+            </div>
+
+            <div class="tech-item">
+              <span class="tech-icon">🌭</span>
+              <span class="tech-name">单片机</span>
+            </div>
+
+            <div class="tech-item">
+              <span class="tech-icon">🥓</span>
+              <span class="tech-name">本地部署</span>
+            </div>
+
+            <div class="tech-item">
+              <span class="tech-icon">🥚</span>
+              <span class="tech-name">达芬奇</span>
+            </div>
+
+            <div class="tech-item">
+              <span class="tech-icon">🧇</span>
+              <span class="tech-name">搭网站</span>
+            </div>
+
+
+
+          </div>
+        </section>
+
       </div>
     </main>
 
-    <!-- 同样的粒子特效 JS -->
-    <!-- 浏览器端脚本负责画布尺寸、鼠标互动和粒子动画。 -->
-    <script>
-      // 粒子逻辑使用 Canvas 2D API，在浏览器中更新和绘制页面背景。
-      // 找到页面中的背景画布，并建立 Canvas 2D 绘图上下文。
-      const canvas = document.getElementById('particle-canvas');
-      const ctx = canvas.getContext('2d');
-      // 画布的像素尺寸跟随视口；宽高也用于粒子边界判断。
-      let width = canvas.width = window.innerWidth;
-      let height = canvas.height = window.innerHeight;
-      // 鼠标初始放在屏幕外；radius 定义鼠标影响粒子的范围。
-      let mouse = {
-        x: -1000, y: -1000, radius: 120
-      };
-      // 事件监听器同步鼠标位置；窗口变化时重设画布并重新生成粒子。
-      window.addEventListener('mousemove', (e) => {
-        mouse.x = e.x;
-        mouse.y = e.y;
-      });
-      window.addEventListener('mouseout', () => {
-        mouse.x = -1000;
-        mouse.y = -1000;
-      });
-      window.addEventListener('resize', () => {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-        initParticles();
-      });
-      let particles = [];
-      // 小屏幕减少粒子数量，降低动画需要处理的对象数。
-      const particleCount = window.innerWidth < 768 ? 40 : 65;
-      // 粒子类保存绘制所需状态，并实现移动、鼠标排斥和绘制方法。
-      class Particle {
-        // 构造函数为粒子随机设置起点、移动速度和基础半径。
-        constructor() {
-          this.x = Math.random() * width;
-          this.y = Math.random() * height;
-          this.vx = (Math.random() - 0.5) * 1;
-          this.vy = (Math.random() - 0.5) * 1;
-          this.baseRadius = Math.random() * 1.5 + 1;
-          this.radius = this.baseRadius;
-        }
-        // 每帧先处理边界和移动，再根据鼠标距离计算排斥力。
-        update() {
-          if (this.x < 0 || this.x > width) this.vx = -this.vx;
-          if (this.y < 0 || this.y > height) this.vy = -this.vy;
-          this.x += this.vx;
-          this.y += this.vy;
-          let dx = mouse.x - this.x;
-          let dy = mouse.y - this.y;
-          let distance = Math.sqrt(dx * dx + dy * dy);
-          if (distance < mouse.radius && distance > 0) {
-            const forceDirectionX = dx / distance;
-            const forceDirectionY = dy / distance;
-            const force = (mouse.radius - distance) / mouse.radius;
-            this.x -= forceDirectionX * force * 5;
-            this.y -= forceDirectionY * force * 5;
-            this.radius = this.baseRadius + force * 2;
-          } else {
-            this.radius = this.baseRadius;
-          }
-        }
-        // 按系统深浅色主题选取粒子颜色，再在当前位置画圆。
-        draw() {
-          const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.4)';
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-      // 先创建当前视口需要的粒子，再逐帧更新和绘制背景。
-      function initParticles() {
-        particles = [];
-        for (let i = 0; i < particleCount; i++) {
-          particles.push(new Particle());
-        }
-      }
-      // 动画每帧清空旧画面，更新并绘制粒子，再连接彼此靠近的点。
-      function animate() {
-        ctx.clearRect(0, 0, width, height);
-        for (let i = 0; i < particles.length; i++) {
-          particles[i].update();
-          particles[i].draw();
-          for (let j = i + 1; j < particles.length; j++) {
-            let dx = particles[i].x - particles[j].x;
-            let dy = particles[i].y - particles[j].y;
-            let distance = Math.sqrt(dx * dx + dy * dy);
-            // 两点距离小于阈值时才画连线，避免给过远的粒子连线。
-            if (distance < 100) {
-              const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-              ctx.strokeStyle = isDark ? `rgba(255,255,255,${0.15 - distance/800})` : `rgba(0,0,0,${0.1 - distance/1000})`;
-              ctx.lineWidth = 1;
-              ctx.beginPath();
-              ctx.moveTo(particles[i].x, particles[i].y);
-              ctx.lineTo(particles[j].x, particles[j].y);
-              ctx.stroke();
-            }
-          }
-        }
-        requestAnimationFrame(animate);
-      }
-      initParticles();
-      animate();
-    </script>
-
-    <!-- 通用样式（包含首页的底层设置） -->
-    <!-- Astro 的 is:global 让本页样式规则应用到全局 HTML 元素。 -->
+    <!-- 样式部分 -->
     <style is:global>
-      /* 主题变量集中保存背景、文字和卡片颜色，暗色模式会替换它们。 */
-      :root {
-        --bg-color: #f9f9f9;
-        --text-color: #333;
-        --card-bg: rgba(255, 255, 255, 0.7);
-        --card-border: #ebebeb;
+      /* --- 全局基础设置 --- */
+      :root { 
+        --card-bg: rgba(255, 255, 255, 0.45); /* 高透毛玻璃 */
+        --text-main: #333;
+        --text-sub: #666;
+        --theme-color: #20b2aa;
       }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg-color: #121212;
-          --text-color: #e0e0e0;
-          --card-bg: rgba(30, 30, 30, 0.7);
-          --card-border: #333;
-        }
+
+      body { 
+        margin: 0; 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+        min-height: 100vh; 
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
+        padding: 40px 20px;
+        box-sizing: border-box;
       }
-      /* 固定画布放在页面内容后方，不拦截点击操作。 */
-      #particle-canvas {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: -1;
-        pointer-events: none;
+
+      /* --- 壁纸 --- */
+      .bg-wallpaper { 
+        position: fixed; 
+        top: 0; left: 0; width: 100vw; height: 100vh; 
+        z-index: -1; 
+        background-image: url('/background.png'); 
+        background-size: cover; 
+        background-position: center; 
+        filter: brightness(0.9); 
       }
-      /* body 规则设置页面主题、字体和内容居中布局。 */
-      body {
-        margin: 0;
-        font-family: 'Inter', sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        transition: background-color 0.3s, color 0.3s;
-        min-height: 100vh;
+      
+      /* --- 容器与卡片 --- */
+      .container { width: 100%; max-width: 700px; }
+      
+      .card { 
+        background: var(--card-bg); 
+        backdrop-filter: blur(24px); 
+        -webkit-backdrop-filter: blur(24px); 
+        border: 1px solid rgba(255,255,255,0.8); 
+        border-radius: 24px; 
+        padding: 40px; 
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08); 
+      }
+
+      /* --- 返回按钮 --- */
+      .back-btn { 
+        text-decoration: none; 
+        color: #fff; 
+        font-size: 0.95rem; 
+        display: inline-flex;
+        align-items: center;
+        margin-bottom: 24px; 
+        background: rgba(0,0,0,0.3); 
+        padding: 8px 16px;
+        border-radius: 20px;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s;
+      }
+      .back-btn:hover { background: rgba(0,0,0,0.5); transform: translateX(-4px); }
+
+      /* --- 头部信息 --- */
+      .profile-header { 
+        display: flex; 
+        align-items: center; 
+        gap: 24px; 
+        margin-bottom: 40px; 
+        padding-bottom: 30px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+      }
+      
+      .avatar { 
+        width: 90px; height: 90px; 
+        border-radius: 50%; 
+        object-fit: cover; 
+        border: 3px solid #fff;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      }
+      
+      .profile-text h1 { 
+        margin: 0 0 8px 0; 
+        font-size: 1.8rem; 
+        color: var(--text-main); 
+      }
+      .profile-text p { 
+        margin: 0; 
+        font-size: 1rem; 
+        color: var(--text-sub); 
+      }
+
+      /* --- 内容区块 --- */
+      .section { margin-bottom: 40px; }
+      .section:last-child { margin-bottom: 0; }
+      
+      .section-title { 
+        font-size: 1.25rem; 
+        color: var(--text-main); 
+        margin: 0 0 16px 0; 
+        font-weight: 700;
+      }
+      
+      .section-desc {
+        font-size: 0.9rem;
+        color: var(--text-sub);
+        margin: -8px 0 16px 0;
+      }
+
+      .about-text { 
+        margin: 0; 
+        font-size: 1.05rem; 
+        line-height: 1.8; 
+        color: #444; 
+      }
+
+      /* --- 技术栈网格布局 --- */
+      .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 16px;
+      }
+
+      /* --- 单个技术标签卡片 --- */
+      .tech-item {
         display: flex;
         align-items: center;
-        justify-content: center;
-        overflow-x: hidden;
+        gap: 12px;
+        padding: 14px 16px;
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        cursor: default;
       }
-      /* 容器限制内容最大宽度，并提供两侧留白。 */
-      .container {
-        width: 100%;
-        max-width: 680px;
-        padding: 2rem 1.5rem;
-        z-index: 10;
+
+      .tech-item:hover {
+        background: rgba(255, 255, 255, 0.95);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
       }
-      .profile {
-        text-align: center;
-        margin-bottom: 2rem;
-        animation: fadeInDown 0.8s ease;
+
+      .tech-icon {
+        font-size: 1.4rem;
       }
-      .profile h1 {
-        font-size: 2.2rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-      }
-      /* 自我介绍卡片通过半透明底色和 backdrop-filter 呈现毛玻璃效果。 */
-      .card {
-        display: flex;
-        flex-direction: column;
-        padding: 2rem;
-        background-color: var(--card-bg);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid var(--card-border);
-        border-radius: 12px;
-        animation: fadeInUp 0.8s ease;
-      }
-      .card p {
-        color: #777;
-        font-size: 1.05rem;
-        line-height: 1.8;
-        margin-bottom: 1rem;
-      }
-      @media (prefers-color-scheme: dark) {
-        .card p {
-          color: #aaa;
-        }
-      }
-      /* 返回链接提供回到首页的导航。 */
-      .back-btn {
-        display: inline-block;
-        margin-bottom: 2rem;
-        color: #888;
-        text-decoration: none;
+
+      .tech-name {
         font-size: 0.95rem;
-        transition: color 0.2s;
+        font-weight: 600;
+        color: #333;
       }
-      .back-btn:hover {
-        color: var(--text-color);
-      }
-      @keyframes fadeInDown {
-        from {
-          opacity: 0;
-          transform: translateY(-20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+
+      /* 手机端适配 */
+      @media (max-width: 600px) {
+        .card { padding: 24px; }
+        .profile-header { flex-direction: column; text-align: center; gap: 16px; }
+        .tech-grid { grid-template-columns: repeat(2, 1fr); }
       }
     </style>
   </body>

@@ -1,0 +1,50 @@
+---
+import { getCollection } from 'astro:content';
+const allPosts = await getCollection('blog');
+allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+// 这里不截取，显示所有
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>所有文章 - 筠溪</title>
+    <link rel="icon" type="image/png" href="/touxiang.png" />
+  </head>
+  <body>
+    <div class="bg-wallpaper"></div>
+    <main class="container">
+      <div class="card">
+        <a href="/" class="back-btn">← 返回首页</a>
+        <h1 class="page-title">所有文章</h1>
+        <div class="post-list">
+          {allPosts.map((post) => (
+            <a href={`/blog/${post.id}/`} class="post-item">
+              <h2>{post.data.title}</h2>
+              <p>{post.data.description}</p>
+              <span class="date">{post.data.pubDate.toLocaleDateString('zh-CN')}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </main>
+
+    <style is:global>
+      :root { --card-bg: rgba(255, 255, 255, 0.2); }
+      body { margin: 0; font-family: sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+      .bg-wallpaper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background-image: url('/background.png'); background-size: cover; background-position: center; filter: brightness(0.9); }
+      .container { width: 100%; max-width: 600px; padding: 20px; }
+      .card { background: var(--card-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.9); border-radius: 24px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+      .back-btn { text-decoration: none; color: #888; font-size: 0.9rem; display: inline-block; margin-bottom: 20px; }
+      .page-title { margin: 0 0 24px 0; color: #333; }
+      .post-list { display: flex; flex-direction: column; gap: 16px; }
+      .post-item { text-decoration: none; color: #333; padding: 16px; border-radius: 16px; background: rgba(255,255,255,0.5); transition: background 0.2s; }
+      .post-item:hover { background: rgba(255,255,255,0.9); }
+      .post-item h2 { margin: 0 0 8px 0; font-size: 1.1rem; }
+      .post-item p { margin: 0 0 8px 0; font-size: 0.85rem; color: #666; }
+      .post-item .date { font-size: 0.75rem; color: #aaa; }
+    </style>
+  </body>
+</html>

@@ -32,11 +32,11 @@ allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
     </main>
 
     <style is:global>
-      :root { --card-bg: rgba(255, 255, 255, 0.2); }
+      :root { --card-bg: rgba(255, 255, 255, 0.4); }
       body { margin: 0; font-family: sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
       .bg-wallpaper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background-image: url('/background.png'); background-size: cover; background-position: center; filter: brightness(0.9); }
       .container { width: 100%; max-width: 600px; padding: 20px; }
-      .card { background: var(--card-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.9); border-radius: 24px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+      .card { background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.9); border-radius: 24px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
       .back-btn { text-decoration: none; color: #888; font-size: 0.9rem; display: inline-block; margin-bottom: 20px; }
       .page-title { margin: 0 0 24px 0; color: #333; }
       .post-list { display: flex; flex-direction: column; gap: 16px; }

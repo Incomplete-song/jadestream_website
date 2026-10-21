@@ -1,0 +1,62 @@
+---
+import { getCollection } from 'astro:content';
+// 获取所有日志并倒序排列
+const logs = await getCollection('updatelog');
+logs.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>更新日志 - 筠溪</title>
+    <link rel="icon" type="image/png" href="/touxiang.png" />
+  </head>
+  <body>
+    <div class="bg-wallpaper"></div>
+    <main class="container">
+      <a href="/" class="back-btn">← 返回首页</a>
+      <div class="card">
+        <h1 class="page-title">🚀 更新日志</h1>
+        <p class="page-desc">记录这个网站从 0 到 1 的折腾过程。</p>
+
+        <div class="log-list">
+          <!-- 循环生成卡片 -->
+          {logs.map((log) => (
+            <a href={`/updatelog/${log.id}/`} class="log-item">
+              <div class="log-header">
+                <h2>{log.data.title}</h2>
+                <span class="log-date">{log.data.pubDate.toLocaleDateString('zh-CN')}</span>
+              </div>
+              <p class="log-desc">{log.data.description}</p>
+              <div class="read-more">查看详情 →</div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </main>
+
+    <style is:global>
+      :root { --card-bg: rgba(255, 255, 255, 0.55); --theme-color: #20b2aa; }
+      body { margin: 0; font-family: sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 40px 20px; box-sizing: border-box; }
+      .bg-wallpaper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; background-image: url('/background.png'); background-size: cover; background-position: center; filter: brightness(0.9); }
+      .container { width: 100%; max-width: 700px; }
+      .card { background: var(--card-bg); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.8); border-radius: 24px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); }
+      .back-btn { text-decoration: none; color: #333; font-size: 0.95rem; display: inline-flex; margin-bottom: 24px; background: rgba(255,255,255,0.6); padding: 8px 16px; border-radius: 20px; transition: all 0.3s; font-weight: 500; }
+      .back-btn:hover { background: rgba(255,255,255,0.9); transform: translateX(-4px); }
+      .page-title { margin: 0 0 8px 0; font-size: 2rem; color: #1e293b; }
+      .page-desc { margin: 0 0 32px 0; color: #64748b; font-size: 1rem; }
+
+      .log-list { display: flex; flex-direction: column; gap: 16px; }
+      .log-item { display: flex; flex-direction: column; gap: 8px; padding: 20px; background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(255,255,255,0.6); border-radius: 16px; text-decoration: none; color: #333; transition: all 0.3s ease; }
+      .log-item:hover { background: rgba(255, 255, 255, 0.8); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+      
+      .log-header { display: flex; justify-content: space-between; align-items: baseline; }
+      .log-header h2 { margin: 0; font-size: 1.2rem; color: #1e293b; }
+      .log-date { font-family: monospace; font-size: 0.85rem; color: #888; }
+      .log-desc { margin: 0; font-size: 0.95rem; color: #555; line-height: 1.5; }
+      .read-more { font-size: 0.85rem; color: var(--theme-color); font-weight: bold; margin-top: 8px; text-align: right; }
+    </style>
+  </body>
+</html>

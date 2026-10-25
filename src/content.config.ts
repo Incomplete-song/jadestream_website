@@ -15,11 +15,22 @@ const blog = defineCollection({
 		}),
 });
 
-// 2. ★ 新增：更新日志集合
+// 2. 生活板块集合
+const life = defineCollection({
+	loader: glob({ base: './src/content/life', pattern: '**/*.md' }),
+	schema: z.object({
+		title: z.string(),
+		description: z.string(),
+		pubDate: z.coerce.date(),
+		category: z.enum(['game', 'anime', 'photo', 'other']),
+		cover: z.string(),
+		tags: z.array(z.string()).optional(),
+	}),
+});
+
+// ★ 3. 找回的更新日志集合
 const updatelog = defineCollection({
-	// 告诉 Astro 去 src/content/updatelog 文件夹找 md 文件
 	loader: glob({ base: './src/content/updatelog', pattern: '**/*.md' }),
-	// 日志不需要复杂的封面图，只需要标题、摘要和日期
 	schema: z.object({
 		title: z.string(),
 		description: z.string(),
@@ -27,5 +38,5 @@ const updatelog = defineCollection({
 	}),
 });
 
-// 3. ★ 把 updatelog 导出，让页面可以读取
-export const collections = { blog, updatelog };
+// ★ 必须把 updatelog 加进导出列表！
+export const collections = { blog, life, updatelog };

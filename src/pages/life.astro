@@ -1,0 +1,139 @@
+---
+import { getCollection } from 'astro:content';
+
+const allLifePosts = await getCollection('life');
+allLifePosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const getPostsByCategory = (category: string) => {
+  return allLifePosts.filter(post => post.data.category === category);
+};
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>生活 - jadestream</title>
+    <link rel="icon" type="image/png" href="/touxiang.png" />
+  </head>
+  <body>
+    <div class="bg-wallpaper"></div>
+    <main class="full-screen-glass">
+      <div class="content-wrapper">
+        <a href="/" class="back-btn">← 返回首页</a>
+        <header class="page-header">
+          <h1 class="page-title">☕ 生活</h1>
+        </header>
+
+        <div class="tabs">
+          <button class="tab-btn active" data-target="game">🎮 Game</button>
+          <button class="tab-btn" data-target="anime">🌸 Anime</button>
+          <button class="tab-btn" data-target="photo">📷 Photo</button>
+          <button class="tab-btn" data-target="other">✍️ 随笔</button>
+        </div>
+
+        <div class="tab-content">
+          <!-- Game 板块 -->
+          <div id="game" class="content-panel active">
+            {getPostsByCategory('game').map(post => (
+              <a href={`/life/${post.id}/`} class="article-card">
+                <div class="card-cover">
+                  <img src={post.data.cover} alt={post.data.title} />
+                </div>
+                <div class="card-info">
+                  <h2>{post.data.title}</h2>
+                  <p>{post.data.description}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          <!-- Anime 板块 -->
+          <div id="anime" class="content-panel">
+            {getPostsByCategory('anime').map(post => (
+              <a href={`/life/${post.id}/`} class="article-card">
+                <div class="card-cover">
+                  <img src={post.data.cover} alt={post.data.title} />
+                </div>
+                <div class="card-info">
+                  <h2>{post.data.title}</h2>
+                  <p>{post.data.description}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          <!-- Photo 板块 -->
+          <div id="photo" class="content-panel">
+            {getPostsByCategory('photo').map(post => (
+              <a href={`/life/${post.id}/`} class="article-card">
+                <div class="card-cover">
+                  <img src={post.data.cover} alt={post.data.title} />
+                </div>
+                <div class="card-info">
+                  <h2>{post.data.title}</h2>
+                  <p>{post.data.description}</p>
+                </div>
+              </a>
+            ))}
+
+          <!-- 随笔 板块 -->
+          <div id="other" class="content-panel">
+            {getPostsByCategory('other').map(post => (
+              <a href={`/life/${post.id}/`} class="article-card">
+                <div class="card-cover">
+                  <img src={post.data.cover} alt={post.data.title} />
+                </div>
+                <div class="card-info">
+                  <h2>{post.data.title}</h2>
+                  <p>{post.data.description}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          </div>  
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const panels = document.querySelectorAll('.content-panel');
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          tabBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          panels.forEach(p => p.classList.remove('active'));
+          document.getElementById(btn.getAttribute('data-target')).classList.add('active');
+        });
+      });
+    </script>
+
+    <style is:global>
+      :root { --theme-color: #20b2aa; --card-bg: rgba(255, 255, 255, 0.4); }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: sans-serif; min-height: 100vh; color: #333; }
+      .bg-wallpaper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; background-image: url('/background.png'); background-size: cover; background-position: center; filter: brightness(0.85); }
+      .full-screen-glass { width: 100vw; min-height: 100vh; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(30px); padding: 40px 20px; display: flex; flex-direction: column; }
+      .content-wrapper { width: 100%; max-width: 900px; margin: 0 auto; }
+      .back-btn { text-decoration: none; color: #333; font-size: 0.95rem; display: inline-flex; margin-bottom: 24px; background: rgba(255,255,255,0.6); padding: 8px 16px; border-radius: 20px; transition: all 0.3s; font-weight: 500; border: 1px solid rgba(255,255,255,0.8); }
+      .page-title { margin: 0 0 8px 0; font-size: 2.5rem; color: #1e293b; font-weight: 800; }
+      .tabs { display: flex; gap: 12px; margin-bottom: 32px; background: rgba(255, 255, 255, 0.3); padding: 8px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.5); }
+      .tab-btn { flex: 1; padding: 14px 0; border: none; background: transparent; border-radius: 12px; font-size: 1.05rem; font-weight: 700; color: #475569; cursor: pointer; transition: all 0.3s ease; }
+      .tab-btn.active { background: rgba(255, 255, 255, 0.9); color: var(--theme-color); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+      .content-panel { display: none; }
+      .content-panel.active { display: flex; flex-direction: column; gap: 30px; }
+      .article-card { display: flex; flex-direction: column; background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.6); border-radius: 16px; overflow: hidden; text-decoration: none; color: #333; transition: all 0.4s ease; }
+      .article-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); background: rgba(255, 255, 255, 0.6); }
+      .card-cover { width: 100%; height: 350px; overflow: hidden; }
+      .card-cover img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+      .article-card:hover .card-cover img { transform: scale(1.05); }
+      .card-info { padding: 24px 30px; }
+      .card-info h2 { margin: 0 0 12px 0; font-size: 1.6rem; color: #1e293b; }
+      .card-info p { margin: 0; font-size: 1rem; color: #475569; line-height: 1.6; }
+      @media (max-width: 600px) { .card-cover { height: 200px; } .card-info { padding: 20px; } }
+    </style>
+  </body>
+</html>

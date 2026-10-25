@@ -1,12 +1,18 @@
 ---
-// 1. 引入获取文章的方法
 import { getCollection } from 'astro:content';
 
-// 2. 获取所有文章并按日期降序排序
-const allPosts = await getCollection('blog');
+// 1. 同时获取三个文件夹里的所有文章
+const blogs = await getCollection('blog');
+const lives = await getCollection('life');
+const logs = await getCollection('updatelog');
+
+// 2. 把它们合并到一个大数组里
+const allPosts = [...blogs, ...lives, ...logs];
+
+// 3. 按日期从新到旧排序
 allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-// 3. 提取最新的一篇文章
+// 4. 提取最新的一篇
 const latestPost = allPosts[0];
 ---
 <!-- 浏览器用 HTML5 标准模式渲染,必写！ -->
@@ -49,18 +55,21 @@ const latestPost = allPosts[0];
         <div class="card profile-card">
           <div class="profile-header">
             <img src="/touxiang.png" class="avatar" alt="avatar" />
-            <h2>jadestream <span>(开发ing)</span></h2>
+
+            <h2 style="display: flex; align-items: center; gap: 6px;"> jadestream (开发ing) </h2>
+
           </div>
+
           <div class="nav-links">
-            <p class="nav-title">GENERAL</p>
+            <!--<p class="nav-title">GENERAL</p>-->
             <!-- 更新了 href 链接 -->
-            <!-- href后的内容是页面代码文件名称 -->
+            <!-- href后的内容是卡片对应的代码文件名称 -->
             <!--  -->
-            <a href="/recent" class="nav-item"><span class="icon">📚</span> 最近更新</a>
-            <a href="/posts" class="nav-item"><span class="icon">💠</span> 所有文章</a>
-            <a href="/about" class="nav-item"><span class="icon">💬</span> 关于我</a>
-            <a href="/share" class="nav-item"><span class="icon">⭐</span> 推荐分享</a>
-            <a href="/updatelog" class="nav-item"><span class="icon">😎</span> 更新日志</a>
+            <a href="/posts" class="nav-item"> <span class="icon">💠</span> 所有文章</a>
+            <a href="/life" class="nav-item"> <span class="icon">☕</span> 生活</a>
+            <a href="/about" class="nav-item"> <span class="icon">💬</span> 关于我</a>
+            <a href="/share" class="nav-item"> <span class="icon">⭐</span> 推荐分享</a>
+            <a href="/updatelog" class="nav-item"> <span class="icon">😎</span> 更新日志</a>
 
           </div>
         </div>
@@ -68,10 +77,12 @@ const latestPost = allPosts[0];
         <!-- 动态最新文章卡片 -->
         <div class="card latest-post-card">
           <p class="card-title">最新文章</p>
+
+          <!-- ?:条件表达式，有文章时显示 -->
           {latestPost ? (
-            <a href={`/blog/${latestPost.id}/`} class="latest-post-link">
+            <a href={`/${latestPost.collection}/${latestPost.id}/`} class="latest-post-link">
               <div class="post-info">
-                <div class="post-cover" style="background-image: url('/background.png'); background-size: cover;"></div>
+                <div class="post-cover" style="background-image: url('/background2.png'); background-size: cover;"></div>
                 <div class="post-text">
                   <h4>{latestPost.data.title}</h4>
                   <p>{latestPost.data.description}</p>
@@ -86,6 +97,7 @@ const latestPost = allPosts[0];
               <p style="color: #888; font-size: 0.9rem;">暂无文章，快去写一篇吧！</p>
             </div>
           )}
+
         </div>
       </div>
 
@@ -300,7 +312,11 @@ const latestPost = allPosts[0];
         box-sizing: border-box;
       }
 
-      .col { display: flex; flex-direction: column; gap: 24px; }
+      .col { 
+        display: flex; 
+        flex-direction: column;                         /* --- 使卡片纵向排列 --- */
+        gap: 24px; 
+      }
 
       /* --- 通用卡片样式 --- */
       .card {
@@ -314,13 +330,13 @@ const latestPost = allPosts[0];
         transition: transform 0.3s ease;
       }
       
-      .card:hover { transform: translateY(-4px); }
+      .card:hover { transform: translateY(-4px); }    /*伪类选择器，当鼠标悬停在.card类的上面时这一类会发生xx变化*/
 
       /* --- 左侧列样式 --- */
       .profile-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
       .avatar {
-        width: 48px; height: 48px;
-        border-radius: 50%;
+        width: 48px; height: 48px;/* --- 头像大小 --- */
+        border-radius: 50%;       /* --- 圆角半径 = width × border-radius（水平） 和 height × border-radius（垂直）50%正好是个圆 --- */
         object-fit: cover;
         background: #ffe4e1;
         padding: 2px;
@@ -329,20 +345,32 @@ const latestPost = allPosts[0];
       .profile-header span { font-size: 0.8rem; color: var(--theme-color); font-weight: normal; }
       
       .nav-title { font-size: 0.75rem; color: var(--text-sub); letter-spacing: 1px; margin-bottom: 12px; }
-      .nav-links { display: flex; flex-direction: column; gap: 8px; }
-      .nav-item {
-        display: flex; align-items: center; gap: 12px;
-        padding: 12px 16px; border-radius: 16px;
-        text-decoration: none; color: var(--text-main);
-        font-size: 0.95rem; font-weight: 500;
-        transition: background 0.2s;
+
+      .nav-links { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px;
       }
+      
+      .nav-item {
+        display: flex;              /* 变成 flex 容器，独占一行、可设宽高内边距 */
+        align-items: center;        /* 图标和文字垂直居中对齐 */
+        gap: 12px;                  /* 图标和文字之间留 12px 间距 */
+        padding: 12px 16px;         /* 内边距，撑出可点击的"按钮块" */
+        border-radius: 16px;        /* 圆角，变成圆角方块 */
+        text-decoration: none;      /* 去掉 <a> 默认的下划线 */
+        color: var(--text-main);    /* 文字颜色用主色 #333，而非链接默认蓝色 */
+        font-size: 0.95rem;         /* 字号 */
+        font-weight: 500;           /* 字重，稍粗 */
+        transition: background 0.2s;/* 背景变化时 0.2 秒平滑过渡 */
+      }
+
       .nav-item:hover { background: rgba(255,255,255,0.6); }
       .nav-item.active { background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.03); color: var(--theme-color); }
-      .nav-item .icon { font-size: 1.2rem; }
+      .nav-item .icon { font-size: 2.5rem; }/* --- 更改所有.nav-item .icon类的大小 --- */
 
       .latest-post-card { flex: 1; display: flex; flex-direction: column; }
-      .card-title { font-size: 0.85rem; color: var(--text-sub); margin: 0 0 16px 0; }
+      .card-title { font-size: 1.0rem; color: #1a1a1a; margin: 0 0 16px 0; }/* --- margin按上右下左顺时针描述与周围的距离 --- */
       .post-info { display: flex; gap: 12px; align-items: center; }
       .post-cover { width: 56px; height: 56px; border-radius: 12px; flex-shrink: 0; }
       .post-text h4 { margin: 0 0 4px 0; font-size: 0.95rem; line-height: 1.4; }
